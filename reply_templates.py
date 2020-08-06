@@ -3,15 +3,15 @@ _poolinfo_reply_EN = """
 <i>{desc}</i>
 
 <b>ℹ️ Pool info</b>
-    pledge: {pledge_ada} ada
-    cost: {cost_ada} ada
-    margin: {margin_perc}%
+    pledge: <code>{pledge_ada} ₳</code>
+    cost: <code>{cost_ada} ₳</code>
+    margin: <code>{margin_perc}%</code>
 
 <b>📈 Metrics</b>
-    saturation: {saturat}
-    controlled stake: {rel_stake_perc}%
-    produced blocks: {blocks}
-    rewards: {rewards_ada} ada
+    saturation: <code>{saturat}</code>
+    controlled stake: <code>{rel_stake_perc}%</code>
+    produced blocks: <code>{blocks}</code>
+    rewards: <code>{rewards_ada} ₳</code>
 """
 
 _poolinfo_reply_PT = """
@@ -19,15 +19,15 @@ _poolinfo_reply_PT = """
 <i>{desc}</i>
 
 <b>ℹ️ Informações da pool</b>
-    pledge: {pledge_ada} ada
-    custo: {cost_ada} ada
-    margem: {margin_perc}%
+    pledge: <code>{pledge_ada} ₳</code>
+    custo: <code>{cost_ada} ₳</code>
+    margem: <code>{margin_perc}%</code>
 
 <b>📈 Métricas</b>
-    saturação: {saturat}
-    stake controlado: {rel_stake_perc}%
-    blocos produzidos: {blocks}
-    recompensas: {rewards_ada} ada
+    saturação: <code>{saturat}</code>
+    stake controlado: <code>{rel_stake_perc}%</code>
+    blocos produzidos: <code>{blocks}</code>
+    recompensas: <code>{rewards_ada} ₳</code>
 """
 
 poolinfo_reply = {

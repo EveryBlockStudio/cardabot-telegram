@@ -7,18 +7,38 @@ import random
 
 def lovelace_to_ada(value):
     """ Take a value in lovelace and returns in ADA (str) """
+
     # Define units
     K = 1000
     M = 1000000
     B = 1000000000
+    units = {
+        'no': 1,
+        'K': K,
+        'M': M,
+        'B': B
+    }
 
     # Calculate ADA from lovelaces
-    ada_int = int(value/M)
+    ada_int = value//M
 
-    # Select
+    # Select the best unit to show
+    if ada_int/K < 1:
+        best_unit = 'no'
+    elif ada_int/M < 1:
+        best_unit = 'K'
+    elif ada_int/B < 1:
+        best_unit = 'M'
+    else:
+        best_unit = 'B'
 
     # Transform int to str
-    ada_str = ada_int
+    if best_unit == 'no':
+        ada_str = '{}'.format(ada_int)
+    else:
+        ada_str = '{}{}'.format((ada_int/units[best_unit]), best_unit)
+
+    return ada_str
 
 def help_callback(update, context):
     update.message.reply_html(help_reply[language])
@@ -80,15 +100,15 @@ def poolinfo_callback(update, context):
             desc = pool['metadata']['description']
             site = pool['metadata']['homepage']
             pledge = pool['pledge']['quantity']
-            pledge_ada = str(int(pledge /lov))
+            pledge_ada = lovelace_to_ada(pledge)
             cost = pool['cost']['quantity']
-            cost_ada = str(int(cost/lov))
+            cost_ada = lovelace_to_ada(cost)
             margin_perc = pool['margin']['quantity']
             saturat = pool['metrics']['saturation']
             rel_stake_perc = pool['metrics']['relative_stake']['quantity']
             blocks = pool['metrics']['produced_blocks']['quantity']
             rewards = pool['metrics']['non_myopic_member_rewards']['quantity']
-            rewards_ada = str(int(rewards/lov))
+            rewards_ada = lovelace_to_ada(rewards)
             update.message.reply_html(
                 poolinfo_reply[language].format(
                     quote=True,
@@ -138,11 +158,11 @@ if __name__ == '__main__':
     dispatcher.add_handler(start_handler)
 
     # netinfo handler
-    netinfo_handler = CommandHandler('netinfo', netinfo_callback)
+    netinfo_handler = CommandHandler('network', netinfo_callback)
     dispatcher.add_handler(netinfo_handler)
 
     # poolinfo handler
-    poolinfo_handler = CommandHandler('poolinfo', poolinfo_callback)
+    poolinfo_handler = CommandHandler('pool', poolinfo_callback)
     dispatcher.add_handler(poolinfo_handler)
 
     # language handler
