@@ -5,6 +5,20 @@ import logging
 import requests
 import random
 
+def lovelace_to_ada(value):
+    """ Take a value in lovelace and returns in ADA (str) """
+    # Define units
+    K = 1000
+    M = 1000000
+    B = 1000000000
+
+    # Calculate ADA from lovelaces
+    ada_int = int(value/M)
+
+    # Select
+
+    # Transform int to str
+    ada_str = ada_int
 
 def help_callback(update, context):
     update.message.reply_html(help_reply[language])
@@ -51,15 +65,15 @@ def poolinfo_callback(update, context):
     json_data = r.json()
 
     if context.args:
-        ticker = ' '.join(context.args)
+        typed_ticker = ' '.join(context.args)
     else:
-        ticker = 'EBS'
+        typed_ticker = 'EBS'
 
     gotpool = False
     lov = 1000000
 
     for pool in json_data:
-        if 'metadata' in pool and pool['metadata']['ticker'].upper() == ticker.upper():
+        if 'metadata' in pool and pool['metadata']['ticker'].upper() == typed_ticker.upper():
             gotpool = True
             pool_name = pool['metadata']['name']
             pool_ticker = pool['metadata']['ticker']
@@ -91,7 +105,9 @@ def poolinfo_callback(update, context):
             break
 
     if not gotpool:
-        update.message.reply_html(poolinfo_reply_error[language])
+        update.message.reply_html(
+            poolinfo_reply_error[language].format(
+                ticker=typed_ticker))
 
 
 def start_callback(update, context):
