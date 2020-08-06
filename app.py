@@ -59,7 +59,7 @@ def poolinfo_callback(update, context):
     lov = 1000000
 
     for pool in json_data:
-        if 'metadata' in pool and pool['metadata']['ticker'] == ticker:
+        if 'metadata' in pool and pool['metadata']['ticker'].upper() == ticker.upper():
             gotpool = True
             pool_name = pool['metadata']['name']
             desc = pool['metadata']['description']
