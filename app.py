@@ -62,6 +62,7 @@ def poolinfo_callback(update, context):
         if 'metadata' in pool and pool['metadata']['ticker'].upper() == ticker.upper():
             gotpool = True
             pool_name = pool['metadata']['name']
+            pool_ticker = pool['metadata']['ticker']
             desc = pool['metadata']['description']
             site = pool['metadata']['homepage']
             pledge = pool['pledge']['quantity']
@@ -77,7 +78,7 @@ def poolinfo_callback(update, context):
             update.message.reply_html(
                 poolinfo_reply[language].format(
                     quote=True,
-                    ticker=ticker,
+                    ticker=pool_ticker,
                     pool_name=pool_name,
                     desc=desc,
                     pledge_ada=pledge_ada,
