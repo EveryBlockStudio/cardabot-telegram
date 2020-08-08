@@ -8,13 +8,13 @@ _poolinfo_reply_EN = """
     pledge: <code>{pledge_ada} ₳</code>
     cost: <code>{cost_ada} ₳</code>
     margin: <code>{margin_perc}%</code>
-
-<b>📈 Metrics</b>
-    saturation: <code>{saturat}</code>
-    controlled stake: <code>{rel_stake_perc}%</code>
-    produced blocks: <code>{blocks}</code>
-    rewards: <code>{rewards_ada} ₳</code>
 """
+# <b>📈 Metrics</b>
+#     saturation: <code>{saturat}</code>
+#     controlled stake: <code>{rel_stake_perc}%</code>
+#     produced blocks: <code>{blocks}</code>
+#     rewards: <code>{rewards_ada} ₳</code>
+
 
 _poolinfo_reply_PT = """
 <b><code>{ticker}</code> {pool_name}</b>
@@ -26,13 +26,13 @@ _poolinfo_reply_PT = """
     pledge: <code>{pledge_ada} ₳</code>
     custo: <code>{cost_ada} ₳</code>
     margem: <code>{margin_perc}%</code>
-
-<b>📈 Métricas</b>
-    saturação: <code>{saturat}</code>
-    stake controlado: <code>{rel_stake_perc}%</code>
-    blocos produzidos: <code>{blocks}</code>
     recompensas: <code>{rewards_ada} ₳</code>
 """
+# <b>📈 Métricas</b>
+#     saturação: <code>{saturat}</code>
+#     stake controlado: <code>{rel_stake_perc}%</code>
+#     blocos produzidos: <code>{blocks}</code>
+
 
 poolinfo_reply = {
     'EN': _poolinfo_reply_EN,
