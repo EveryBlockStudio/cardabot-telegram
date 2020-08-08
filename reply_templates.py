@@ -91,7 +91,7 @@ These are the commands I understand for now:
 
 /start
 /pool TICKER
-/network
+/epoch
 /help
 /language LANG
 <code>   : LANG = [EN, PT]</code>
@@ -107,7 +107,7 @@ Esses são os comandos que eu entendo por enquanto:
 
 /start
 /pool TICKER
-/network
+/epoch
 /help
 /language LANG
 <code>   : LANG = [EN, PT]</code>
@@ -124,8 +124,8 @@ _help_reply_EN = """
 These are the commands I understand for now:
 
 /start
-/poolinfo TICKER
-/netinfo
+/pool TICKER
+/epoch
 /help
 /language LANG
 <code>   : LANG = [EN, PT]</code>
@@ -136,8 +136,8 @@ _help_reply_PT = """
 Esses são os comandos que eu entendo por enquanto:
 
 /start
-/poolinfo TICKER
-/netinfo
+/pool TICKER
+/epoch
 /help
 /language LANG
 <code>   : LANG = [EN, PT]</code>
