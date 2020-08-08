@@ -146,3 +146,29 @@ Esses são os comandos que eu entendo por enquanto:
 help_reply = {
     'EN': _help_reply_EN,
     'PT': _help_reply_PT}
+
+###############################################################################
+
+_epoch_reply_EN = """
+Here what I got:
+
+🔄 <b>Epoch progress</b>
+<code>{progress_bar} {perc:.1f}%</code>
+    Current epoch: <code>{current_epoch}</code>
+    Slots: <code>{current_slot}/432000</code>
+    Remaining time: <code>{remaining_time}</code>
+"""
+
+_epoch_reply_PT = """
+Aqui o que eu encontrei:
+
+🔄 <b>Progresso da época</b>
+<code>{progress_bar} {perc:.1f}%</code>
+    Época atual: <code>{current_epoch}</code>
+    Slots: <code>{current_slot}/432000</code>
+    Tempo restante: <code>{remaining_time}</code>
+"""
+
+epoch_reply = {
+    'EN': _epoch_reply_EN,
+    'PT': _epoch_reply_PT}

@@ -4,6 +4,52 @@ from telegram.ext import Updater, CommandHandler
 import logging
 import requests
 import random
+from datetime import datetime
+
+
+def get_progress_bar(perc):
+    if perc < 10:
+        return "▱▱▱▱▱▱▱▱▱▱"
+    elif perc < 20:
+        return "▰▱▱▱▱▱▱▱▱▱"
+    elif perc < 30:
+        return "▰▰▱▱▱▱▱▱▱▱"
+    elif perc < 40:
+        return "▰▰▰▱▱▱▱▱▱▱"
+    elif perc < 50:
+        return "▰▰▰▰▱▱▱▱▱▱"
+    elif perc < 60:
+        return "▰▰▰▰▰▱▱▱▱▱"
+    elif perc < 70:
+        return "▰▰▰▰▰▰▱▱▱▱"
+    elif perc < 80:
+        return "▰▰▰▰▰▰▰▱▱▱"
+    elif perc < 90:
+        return "▰▰▰▰▰▰▰▰▱▱"
+    elif perc < 100:
+        return "▰▰▰▰▰▰▰▰▰▱"
+
+def beauty_time(timedelta):
+    days = timedelta.days
+
+    minute_limit = 60 * 60
+    hour_limit = 60 * 60 * 24
+
+    hours_intdiv = ((timedelta.seconds)/60)//60
+    remaining_seconds = timedelta.seconds - (hours_intdiv * 60 * 60)
+    remaining_min_intdiv = remaining_seconds//60
+
+    if days == 0 and timedelta.seconds < minute_limit:
+        return "{}m".format(int(timedelta.seconds//60))
+
+    elif days == 0 and timedelta.seconds < hour_limit:
+        return "{}h{}m".format(int(hours_intdiv), int(remaining_min_intdiv))
+
+    else:
+        if days > 1:
+            return "{} days, {}h{}m".format(days, int(hours_intdiv), int(remaining_min_intdiv))
+        else:
+            return "{} day, {}h{}m".format(days, int(hours_intdiv), int(remaining_min_intdiv))
 
 def lovelace_to_ada(value):
     """ Take a value in lovelace and returns in ADA (str) """
@@ -65,13 +111,39 @@ def change_lang_callback(update, context):
         update.message.reply_html(change_lang_reply[language])
 
 
-def netinfo_callback(update, context):
+def epochinfo_callback(update, context):
     target = '/network/information'
+    total_slot = 432000
 
     r = requests.get(url+target)
 
     if r.status_code == 200:
-        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Here what we got...\n{r.text}")
+
+        json_data = r.json()
+
+        # parse json
+        current_epoch = json_data['network_tip']['epoch_number']
+        current_slot = json_data['network_tip']['slot_number']
+        next_epoch_time_str = json_data['next_epoch']['epoch_start_time']
+
+        # get current time
+        current_time =  datetime.utcnow()
+        next_epoch_time = datetime.strptime(next_epoch_time_str, "%Y-%m-%dT%H:%M:%SZ")
+        # calc diff time
+        remaining_time = next_epoch_time - current_time
+
+        # get perc bar and number
+        perc = (current_slot / total_slot) * 100
+        progress_bar = get_progress_bar(perc)
+
+        update.message.reply_html(
+            epoch_reply[language].format(
+                progress_bar=progress_bar,
+                perc=perc,
+                current_epoch=current_epoch,
+                current_slot=current_slot,
+                remaining_time=beauty_time(remaining_time)))
+
     else:
         context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, no response from server :(")
 
@@ -161,9 +233,9 @@ if __name__ == '__main__':
     start_handler = CommandHandler('start', start_callback)
     dispatcher.add_handler(start_handler)
 
-    # netinfo handler
-    netinfo_handler = CommandHandler('network', netinfo_callback)
-    dispatcher.add_handler(netinfo_handler)
+    # epochinfo handler
+    epochinfo_handler = CommandHandler('epoch', epochinfo_callback)
+    dispatcher.add_handler(epochinfo_handler)
 
     # poolinfo handler
     poolinfo_handler = CommandHandler('pool', poolinfo_callback)
