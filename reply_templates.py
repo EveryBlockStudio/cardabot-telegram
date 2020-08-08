@@ -1,8 +1,10 @@
 _poolinfo_reply_EN = """
 <b><code>{ticker}</code> {pool_name}</b>
 <i>{desc}</i>
+🌐{homepage}
 
 <b>ℹ️ Pool info</b>
+    rank: <code>#️{pool_rank}</code>
     pledge: <code>{pledge_ada} ₳</code>
     cost: <code>{cost_ada} ₳</code>
     margin: <code>{margin_perc}%</code>
@@ -17,8 +19,10 @@ _poolinfo_reply_EN = """
 _poolinfo_reply_PT = """
 <b><code>{ticker}</code> {pool_name}</b>
 <i>{desc}</i>
+🌐{homepage}
 
 <b>ℹ️ Informações da pool</b>
+    rank: <code>#️{pool_rank}</code>
     pledge: <code>{pledge_ada} ₳</code>
     custo: <code>{cost_ada} ₳</code>
     margem: <code>{margin_perc}%</code>

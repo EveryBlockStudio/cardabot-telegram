@@ -90,15 +90,16 @@ def poolinfo_callback(update, context):
         typed_ticker = 'EBS'
 
     gotpool = False
-    lov = 1000000
 
-    for pool in json_data:
+    for ind, pool in enumerate(json_data):
         if 'metadata' in pool and pool['metadata']['ticker'].upper() == typed_ticker.upper():
             gotpool = True
             pool_name = pool['metadata']['name']
+            homepage = pool['metadata']['homepage']
             pool_ticker = pool['metadata']['ticker']
             desc = pool['metadata']['description']
             site = pool['metadata']['homepage']
+            rank = ind
             pledge = pool['pledge']['quantity']
             pledge_ada = lovelace_to_ada(pledge)
             cost = pool['cost']['quantity']
@@ -114,7 +115,9 @@ def poolinfo_callback(update, context):
                     quote=True,
                     ticker=pool_ticker,
                     pool_name=pool_name,
+                    homepage=homepage,
                     desc=desc,
+                    pool_rank=rank,
                     pledge_ada=pledge_ada,
                     cost_ada=cost_ada,
                     margin_perc=margin_perc,
