@@ -8,13 +8,13 @@ _poolinfo_reply_EN = """
     pledge: <code>{pledge_ada} ₳</code>
     cost: <code>{cost_ada} ₳</code>
     margin: <code>{margin_perc}%</code>
-"""
-# <b>📈 Metrics</b>
-#     saturation: <code>{saturat}</code>
-#     controlled stake: <code>{rel_stake_perc}%</code>
-#     produced blocks: <code>{blocks}</code>
-#     rewards: <code>{rewards_ada} ₳</code>
 
+<b>📈 Metrics</b>
+    saturation: <code>{saturat:.3f}%</code>
+    controlled stake: <code>{rel_stake_perc}%</code>
+    produced blocks: <code>{blocks}</code>
+    rewards: <code>{rewards_ada} ₳</code>
+"""
 
 _poolinfo_reply_PT = """
 <b><code>{ticker}</code> {pool_name}</b>
@@ -26,13 +26,13 @@ _poolinfo_reply_PT = """
     pledge: <code>{pledge_ada} ₳</code>
     custo: <code>{cost_ada} ₳</code>
     margem: <code>{margin_perc}%</code>
-"""
-# <b>📈 Métricas</b>
-#     saturação: <code>{saturat}</code>
-#     stake controlado: <code>{rel_stake_perc}%</code>
-#     blocos produzidos: <code>{blocks}</code>
-#     recompensas: <code>{rewards_ada} ₳</code>
 
+<b>📈 Métricas</b>
+    saturação: <code>{saturat:.3f}%</code>
+    stake controlado: <code>{rel_stake_perc}%</code>
+    blocos produzidos: <code>{blocks}</code>
+    recompensas: <code>{rewards_ada} ₳</code>
+"""
 
 poolinfo_reply = {
     'EN': _poolinfo_reply_EN,
@@ -83,9 +83,7 @@ change_lang_reply = {
 ###############################################################################
 
 _welcome_reply_EN = """
-Hello! I'm <b>CardaBot</b> 🤖, a Cardano information bot developed by <b>EveryBlock Studio</b> (ticker: <code>EBS</code>).
-
-I'm not ready for the public yet 😞
+Hello! I'm <b>CardaBot</b> 🤖, a Cardano information bot developed by <b>EveryBlock Studio</b> (ticker: <code>EBS</code>) in collaboration with <b>@BradaPool</b> (ticker: <code>BRADA</code>).
 
 These are the commands I understand for now:
 
@@ -95,13 +93,10 @@ These are the commands I understand for now:
 /help
 /language LANG
 <code>   : LANG = [EN, PT]</code>
-
 """
 
 _welcome_reply_PT = """
-Olá! Sou o <b>CardaBot</b> 🤖, um bot de informações da rede Cardano desenvolvido pela <b>EveryBlock Studio</b> (ticker: <code>EBS</code>).
-
-Ainda não estou pronto para o público 😞
+Olá! Sou o <b>CardaBot</b> 🤖, um bot de informações da rede Cardano desenvolvido pela <b>EveryBlock Studio</b> (ticker: <code>EBS</code>) em colaboração com a <b>@BradaPool</b> (ticker: <code>BRADA</code>).
 
 Esses são os comandos que eu entendo por enquanto:
 
@@ -111,7 +106,6 @@ Esses são os comandos que eu entendo por enquanto:
 /help
 /language LANG
 <code>   : LANG = [EN, PT]</code>
-
 """
 
 welcome_reply = {
@@ -172,3 +166,21 @@ Aqui o que eu encontrei:
 epoch_reply = {
     'EN': _epoch_reply_EN,
     'PT': _epoch_reply_PT}
+
+###############################################################################
+
+_day_text_EN = "day"
+_day_text_PT = "dia"
+
+day_text = {
+    'EN': _day_text_EN,
+    'PT': _day_text_PT}
+
+###############################################################################
+
+_days_text_EN = "days"
+_days_text_PT = "dias"
+
+days_text = {
+    'EN': _days_text_EN,
+    'PT': _days_text_PT}

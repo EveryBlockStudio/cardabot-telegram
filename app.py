@@ -262,12 +262,11 @@ def poolinfo_callback(update, context):
                     pool_rank=rank,
                     pledge_ada=pledge_ada,
                     cost_ada=cost_ada,
-                    margin_perc=margin_perc))
-
-                    # saturat=saturat,
-                    # rel_stake_perc=rel_stake_perc,
-                    # blocks=blocks,
-                    # rewards_ada=rewards_ada
+                    margin_perc=margin_perc,
+                    saturat=saturat,
+                    rel_stake_perc=rel_stake_perc,
+                    blocks=blocks,
+                    rewards_ada=rewards_ada))
             break
 
     if not gotpool:
