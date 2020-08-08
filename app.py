@@ -67,7 +67,7 @@ def get_progress_bar(perc):
         return "▰▰▰▰▰▰▰▰▰▱"
 
 
-def beauty_time(timedelta):
+def beauty_time(timedelta, language):
     days = timedelta.days
 
     minute_limit = 60 * 60
@@ -83,11 +83,12 @@ def beauty_time(timedelta):
     elif days == 0 and timedelta.seconds < hour_limit:
         return "{}h{}m".format(int(hours_intdiv), int(remaining_min_intdiv))
 
+
     else:
         if days > 1:
-            return "{} days, {}h{}m".format(days, int(hours_intdiv), int(remaining_min_intdiv))
+            return "{} {}, {}h{}m".format(days, days_text[language], int(hours_intdiv), int(remaining_min_intdiv))
         else:
-            return "{} day, {}h{}m".format(days, int(hours_intdiv), int(remaining_min_intdiv))
+            return "{} {}, {}h{}m".format(days, day_text[language], int(hours_intdiv), int(remaining_min_intdiv))
 
 
 def lovelace_to_ada(value):
@@ -143,7 +144,9 @@ def change_lang_callback(update, context):
 
     is_admin = False
     if update.effective_chat.type == 'group':
-        if update.effective_user.id in get_admin_ids(context.bot, update.message.chat_id):
+        if update.effective_user.id in get_admin_ids(
+            context.bot,
+            update.message.chat_id):
             is_admin = True
     else:
         is_admin = True
@@ -205,10 +208,12 @@ def epochinfo_callback(update, context):
                 perc=perc,
                 current_epoch=current_epoch,
                 current_slot=current_slot,
-                remaining_time=beauty_time(remaining_time)))
+                remaining_time=beauty_time(remaining_time, language)))
 
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, no response from server :(")
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Sorry, no response from server :(")
 
 
 def poolinfo_callback(update, context):
