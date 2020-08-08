@@ -1,10 +1,46 @@
-from credentials import bot_token, wallet_url
+from credentials import bot_token, wallet_url, database_url#, database_credentials
 from reply_templates import *
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, DictPersistence, PicklePersistence
 import logging
 import requests
 import random
 from datetime import datetime
+import json
+
+
+#import firebase_admin
+#from firebase_admin import credentials
+#from firebase_admin import firestore
+#from ptb_firebase_persistence import FirebasePersistence
+
+
+def get_language(chat_id_int):
+    chat_id = str(chat_id_int)
+
+    with open('language_options.json', 'r') as f:
+        json_obj = json.load(f)
+
+    if chat_id in json_obj:
+
+        language = json_obj[chat_id]
+
+    else:
+        language = 'EN'
+
+    return language
+
+
+def set_language(chat_id_int, lang):
+    chat_id = str(chat_id_int)
+
+    with open('language_options.json', 'r') as f:
+        json_obj = json.load(f)
+        print('antes: ',json_obj)
+
+    with open('language_options.json', 'w') as f:
+        json_obj[chat_id] = lang
+        print('depois:',json_obj)
+        json.dump(json_obj, f)
 
 
 def get_progress_bar(perc):
@@ -29,6 +65,7 @@ def get_progress_bar(perc):
     elif perc < 100:
         return "▰▰▰▰▰▰▰▰▰▱"
 
+
 def beauty_time(timedelta):
     days = timedelta.days
 
@@ -50,6 +87,7 @@ def beauty_time(timedelta):
             return "{} days, {}h{}m".format(days, int(hours_intdiv), int(remaining_min_intdiv))
         else:
             return "{} day, {}h{}m".format(days, int(hours_intdiv), int(remaining_min_intdiv))
+
 
 def lovelace_to_ada(value):
     """ Take a value in lovelace and returns in ADA (str) """
@@ -86,17 +124,25 @@ def lovelace_to_ada(value):
 
     return ada_str
 
+
 def help_callback(update, context):
+    language = get_language(update.effective_chat.id)
+
+    #print(update.effective_chat.id)
+    #print(language)
+
     update.message.reply_html(help_reply[language])
 
+
 def change_lang_callback(update, context):
-    global language
+    language = get_language(update.effective_chat.id)
 
     # Extract language ID from message
     if context.args:
         user_lang = ' '.join(context.args).upper()
         if user_lang in supported_languages:
             language = user_lang
+            set_language(update.effective_chat.id, language)
             update.message.reply_html(change_lang_reply[language])
         else:
             update.message.reply_html(f"I don't speak {user_lang} yet 😞")
@@ -108,10 +154,13 @@ def change_lang_callback(update, context):
                 language = random_lang
                 break
 
+        set_language(update.effective_chat.id, language)
         update.message.reply_html(change_lang_reply[language])
 
 
 def epochinfo_callback(update, context):
+    language = get_language(update.effective_chat.id)
+
     target = '/network/information'
     total_slot = 432000
 
@@ -149,6 +198,8 @@ def epochinfo_callback(update, context):
 
 
 def poolinfo_callback(update, context):
+    language = get_language(update.effective_chat.id)
+
     update.message.reply_html(poolinfo_reply_wait[language])
 
     target = '/stake-pools?stake=0'
@@ -207,27 +258,56 @@ def poolinfo_callback(update, context):
 
 
 def start_callback(update, context):
+    language = get_language(update.effective_chat.id)
+
     update.message.reply_html(welcome_reply[language])
 
 
 if __name__ == '__main__':
     # Global language definitions
     global supported_languages
-    global language
+
 
     # Set URL default value
     url = wallet_url
 
     # Define languages
     supported_languages = ['EN','PT']
-    language = 'PT'
+
+    # Use a service account
+    #cred = credentials.Certificate('certain-reducer-285817-0a6844d048c6.json')
+    #firebase_admin.initialize_app(cred)
+
+    #db = firestore.client()
+    #_database_credentials = json.load(
+    #    open('cardabot-firebase-adminsdk-15hps-084e67f4d8.json', 'r'))
+
+    #database_credentials = json.dumps(_database_credentials)
+
+    # create a persistence object with Firebase
+    #cardabot_persistence = FirebasePersistence(
+    #    database_url=database_url,
+    #    credentials=_database_credentials)
+    #cardabot_persistence = DictPersistence(filename='cardabot_persistence')
+    #persistence=cardabot_persistence,
+
+    # Create cardabot persistence locally (DictPersistence)
+    #cardabot_persistence = PicklePersistence()
+
+
 
     # set telegram object
-    updater = Updater(bot_token, use_context=True)
+    updater = Updater(
+        bot_token,
+        #persistence=cardabot_persistence,
+        use_context=True)
     dispatcher = updater.dispatcher
 
+
     # set basic logging
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s %(message)s', level=logging.INFO)
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s %(message)s',
+        level=logging.INFO)
 
     # start handler
     start_handler = CommandHandler('start', start_callback)
@@ -251,3 +331,10 @@ if __name__ == '__main__':
 
 
     updater.start_polling()
+
+
+
+    # Run the bot until you press Ctrl-C or the process receives SIGINT,
+    # SIGTERM or SIGABRT. This should be used most of the time, since
+    # start_polling() is non-blocking and will stop the bot gracefully.
+    updater.idle()
