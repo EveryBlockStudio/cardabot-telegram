@@ -1,11 +1,14 @@
 from credentials import bot_token, wallet_url, database_url#, database_credentials
 from reply_templates import *
 from telegram.ext import Updater, CommandHandler, DictPersistence, PicklePersistence
+from telegram import Bot
 import logging
 import requests
 import random
 from datetime import datetime
 import json
+
+from mwt import MWT
 
 
 #import firebase_admin
@@ -35,11 +38,9 @@ def set_language(chat_id_int, lang):
 
     with open('language_options.json', 'r') as f:
         json_obj = json.load(f)
-        print('antes: ',json_obj)
 
     with open('language_options.json', 'w') as f:
         json_obj[chat_id] = lang
-        print('depois:',json_obj)
         json.dump(json_obj, f)
 
 
@@ -128,35 +129,48 @@ def lovelace_to_ada(value):
 def help_callback(update, context):
     language = get_language(update.effective_chat.id)
 
-    #print(update.effective_chat.id)
-    #print(language)
 
     update.message.reply_html(help_reply[language])
 
 
+@MWT(timeout=60*60)
+def get_admin_ids(bot, chat_id):
+    """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
+    return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
+
 def change_lang_callback(update, context):
     language = get_language(update.effective_chat.id)
 
-    # Extract language ID from message
-    if context.args:
-        user_lang = ' '.join(context.args).upper()
-        if user_lang in supported_languages:
-            language = user_lang
+    is_admin = False
+    if update.effective_chat.type == 'group':
+        if update.effective_user.id in get_admin_ids(context.bot, update.message.chat_id):
+            is_admin = True
+    else:
+        is_admin = True
+
+    if is_admin:
+        # Extract language ID from message
+        if context.args:
+            user_lang = ' '.join(context.args).upper()
+            if user_lang in supported_languages:
+                language = user_lang
+                set_language(update.effective_chat.id, language)
+                update.message.reply_html(change_lang_reply[language])
+            else:
+                update.message.reply_html(f"I don't speak {user_lang} yet 😞")
+
+        else:
+            while True:
+                random_lang = random.choice(supported_languages)
+                if random_lang != language:
+                    language = random_lang
+                    break
+
             set_language(update.effective_chat.id, language)
             update.message.reply_html(change_lang_reply[language])
-        else:
-            update.message.reply_html(f"I don't speak {user_lang} yet 😞")
 
     else:
-        while True:
-            random_lang = random.choice(supported_languages)
-            if random_lang != language:
-                language = random_lang
-                break
-
-        set_language(update.effective_chat.id, language)
-        update.message.reply_html(change_lang_reply[language])
-
+        update.message.reply_html(f"You're not authorized to do that 😞")
 
 def epochinfo_callback(update, context):
     language = get_language(update.effective_chat.id)
