@@ -4,7 +4,7 @@ _poolinfo_reply_EN = """
 🌐{homepage}
 
 <b>ℹ️ Pool info</b>
-    rank: <code>#️{pool_rank}</code>
+    rank: <code>#️{pool_rank} (random)</code>
     pledge: <code>{pledge_ada} ₳</code>
     cost: <code>{cost_ada} ₳</code>
     margin: <code>{margin_perc}%</code>
@@ -22,7 +22,7 @@ _poolinfo_reply_PT = """
 🌐{homepage}
 
 <b>ℹ️ Informações da pool</b>
-    rank: <code>#️{pool_rank}</code>
+    rank: <code>#️{pool_rank} (aleatório)</code>
     pledge: <code>{pledge_ada} ₳</code>
     custo: <code>{cost_ada} ₳</code>
     margem: <code>{margin_perc}%</code>
