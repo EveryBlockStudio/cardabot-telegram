@@ -26,12 +26,12 @@ _poolinfo_reply_PT = """
     pledge: <code>{pledge_ada} ₳</code>
     custo: <code>{cost_ada} ₳</code>
     margem: <code>{margin_perc}%</code>
-    recompensas: <code>{rewards_ada} ₳</code>
 """
 # <b>📈 Métricas</b>
 #     saturação: <code>{saturat}</code>
 #     stake controlado: <code>{rel_stake_perc}%</code>
 #     blocos produzidos: <code>{blocks}</code>
+#     recompensas: <code>{rewards_ada} ₳</code>
 
 
 poolinfo_reply = {
