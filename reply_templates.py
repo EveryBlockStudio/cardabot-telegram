@@ -90,8 +90,8 @@ I'm not ready for the public yet 😞
 These are the commands I understand for now:
 
 /start
-/poolinfo TICKER
-/netinfo
+/pool TICKER
+/network
 /help
 /language LANG
 <code>   : LANG = [EN, PT]</code>
@@ -106,8 +106,8 @@ Ainda não estou pronto para o público 😞
 Esses são os comandos que eu entendo por enquanto:
 
 /start
-/poolinfo TICKER
-/netinfo
+/pool TICKER
+/network
 /help
 /language LANG
 <code>   : LANG = [EN, PT]</code>
