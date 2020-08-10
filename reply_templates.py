@@ -10,8 +10,8 @@ _poolinfo_reply_EN = """
     margin: <code>{margin_perc}%</code>
 
 <b>📈 Metrics</b>
-    saturation: <code>{saturat:.3f}%</code>
-    controlled stake: <code>{rel_stake_perc}%</code>
+    saturation: <code>{saturat:.2f}% {saturat_symbol}</code>
+    controlled stake: <code>{rel_stake_perc:.2f}%</code>
     produced blocks: <code>{blocks}</code>
     rewards: <code>{rewards_ada} ₳</code>
 """
@@ -28,8 +28,8 @@ _poolinfo_reply_PT = """
     margem: <code>{margin_perc}%</code>
 
 <b>📈 Métricas</b>
-    saturação: <code>{saturat:.3f}%</code>
-    stake controlado: <code>{rel_stake_perc}%</code>
+    saturação: <code>{saturat:.2f}% {saturat_symbol}</code>
+    stake controlado: <code>{rel_stake_perc:.2f}%</code>
     blocos produzidos: <code>{blocks}</code>
     recompensas: <code>{rewards_ada} ₳</code>
 """
@@ -46,8 +46,8 @@ _poolinfo_reply_KR = """
     상대수수료: <code>{margin_perc}%</code>
 
 <b>📈 상세정보</b>
-    포화도: <code>{saturat:.3f}%</code>
-    위임량: <code>{rel_stake_perc}%</code>
+    포화도: <code>{saturat:.2f}% {saturat_symbol}</code>
+    위임량: <code>{rel_stake_perc:.2f}%</code>
     생성 블록 수: <code>{blocks}</code>
     보상: <code>{rewards_ada} ₳</code>
 """
@@ -64,8 +64,8 @@ _poolinfo_reply_JP = """
     変動費: <code>{margin_perc}%</code>
 
 <b>📈 メトリクス</b>
-    飽和: <code>{saturat:.3f}%</code>
-    委託量: <code>{rel_stake_perc}%</code>
+    飽和: <code>{saturat:.2f}% {saturat_symbol}</code>
+    委託量: <code>{rel_stake_perc:.2f}%</code>
     生成ブロック: <code>{blocks}</code>
     報酬: <code>{rewards_ada} ₳</code>
 """

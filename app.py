@@ -16,6 +16,14 @@ from mwt import MWT
 #from firebase_admin import firestore
 #from ptb_firebase_persistence import FirebasePersistence
 
+def get_saturat_symbol(saturat):
+    saturat = float(saturat)
+    if saturat < 0.75:
+        return '🟢'
+    elif saturat < 1.0:
+        return '🟡'
+    else:
+        return '🔴'
 
 def get_language(chat_id_int):
     chat_id = str(chat_id_int)
@@ -263,7 +271,8 @@ def poolinfo_callback(update, context):
                     pledge_ada=pledge_ada,
                     cost_ada=cost_ada,
                     margin_perc=margin_perc,
-                    saturat=saturat,
+                    saturat=saturat*100,
+                    saturat_symbol=get_saturat_symbol(saturat),
                     rel_stake_perc=rel_stake_perc,
                     blocks=blocks,
                     rewards_ada=rewards_ada))
