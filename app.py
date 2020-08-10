@@ -290,7 +290,7 @@ if __name__ == '__main__':
     url = wallet_url
 
     # Define languages
-    supported_languages = ['EN', 'PT', 'KR']
+    supported_languages = ['EN', 'PT', 'KR', 'JP']
 
     # Use a service account
     #cred = credentials.Certificate('certain-reducer-285817-0a6844d048c6.json')
