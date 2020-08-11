@@ -248,6 +248,7 @@ def poolinfo_callback(update, context):
             homepage = pool['metadata']['homepage']
             pool_ticker = pool['metadata']['ticker']
             desc = pool['metadata']['description']
+            pool_id = pool['id']
             site = pool['metadata']['homepage']
             rank = ind
             pledge = pool['pledge']['quantity']
@@ -264,6 +265,7 @@ def poolinfo_callback(update, context):
                 poolinfo_reply[language].format(
                     quote=True,
                     ticker=pool_ticker,
+                    pool_id=pool_id,
                     pool_name=pool_name,
                     homepage=homepage,
                     desc=desc,

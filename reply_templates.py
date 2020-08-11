@@ -3,6 +3,9 @@ _poolinfo_reply_EN = """
 <i>{desc}</i>
 🌐{homepage}
 
+<b>🆔 Pool ID</b>
+<code>{pool_id}</code>
+
 <b>ℹ️ Pool info</b>
     rank: <code>#️{pool_rank} (random)</code>
     pledge: <code>{pledge_ada} ₳</code>
@@ -21,7 +24,10 @@ _poolinfo_reply_PT = """
 <i>{desc}</i>
 🌐{homepage}
 
-<b>ℹ️ Informações da pool</b>
+<b>🆔 Identificador da pool</b>
+<code>{pool_id}</code>
+
+<b>ℹ️ Informações</b>
     rank: <code>#️{pool_rank} (aleatório)</code>
     pledge: <code>{pledge_ada} ₳</code>
     custo: <code>{cost_ada} ₳</code>
@@ -38,6 +44,9 @@ _poolinfo_reply_KR = """
 <b><code>{ticker}</code> {pool_name}</b>
 <i>{desc}</i>
 🌐{homepage}
+
+<b>🆔 풀 식별자</b>
+<code>{pool_id}</code>
 
 <b>ℹ️ 풀 정보</b>
     순위: <code>#️{pool_rank} (랜덤)</code>
@@ -56,6 +65,9 @@ _poolinfo_reply_JP = """
 <b><code>{ticker}</code> {pool_name}</b>
 <i>{desc}</i>
 🌐{homepage}
+
+<b>🆔 プール識別子</b>
+<code>{pool_id}</code>
 
 <b>ℹ️ プール情報</b>
     順位: <code>#️{pool_rank} (無作為)</code>
