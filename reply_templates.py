@@ -58,15 +58,15 @@ _poolinfo_reply_JP = """
 🌐{homepage}
 
 <b>ℹ️ プール情報</b>
-    ランク: <code>#️{pool_rank} (random)</code>
-    誓約（資本）: <code>{pledge_ada} ₳</code>
-    固定費: <code>{cost_ada} ₳</code>
-    変動費: <code>{margin_perc}%</code>
+    順位: <code>#️{pool_rank} (無作為)</code>
+    担保量: <code>{pledge_ada} ₳</code>
+    固定手数料: <code>{cost_ada} ₳</code>
+    プール報酬手数料: <code>{margin_perc}%</code>
 
-<b>📈 メトリクス</b>
-    飽和: <code>{saturat:.2f}% {saturat_symbol}</code>
-    委託量: <code>{rel_stake_perc:.2f}%</code>
-    生成ブロック: <code>{blocks}</code>
+<b>📈 メトリックス</b>
+    飽和度: <code>{saturat:.2f}% {saturat_symbol}</code>
+    現在ステーキング量: <code>{rel_stake_perc:.2f}%</code>
+    生成ブロック数: <code>{blocks}</code>
     報酬: <code>{rewards_ada} ₳</code>
 """
 
@@ -91,7 +91,7 @@ _poolinfo_reply_error_KR = """
 """
 
 _poolinfo_reply_error_JP = """
-ごめんなさい！ <code>{ticker}</code> プールは見つかりませんでした 😞
+ごめんなさい。<code>{ticker}</code>プールが見つかりません 😞
 """
 
 poolinfo_reply_error = {
@@ -115,7 +115,7 @@ _poolinfo_reply_wait_KR = """
 """
 
 _poolinfo_reply_wait_JP = """
-プールを探しています、少々お待ちください... ⌛
+今検索中。もう少しお待ちを… ⌛
 """
 
 poolinfo_reply_wait = {
@@ -139,7 +139,7 @@ _change_lang_reply_KR = """
 """
 
 _change_lang_reply_JP = """
-✅ 言語の切り替えに成功しました!
+✅ 日本語への変更ができました!
 """
 
 change_lang_reply = {
@@ -190,12 +190,12 @@ _welcome_reply_KR = """
 """
 
 _welcome_reply_JP = """
-こんにちは! 私は <b>CardaBot</b> 🤖です。 私は @Bradapool (ticker: <code>BRADA</code>) との協同により<b>EveryBlock Studio</b> (ticker: <code>EBS</code>)が開発したカルダノ情報ボットです。
+こんにちは! 私は <b>CardaBot</b> 🤖です。 私は @BradaPool (ticker: <code>EBS</code>) との協同により<b>EveryBlock Studio</b> (ticker: <code>EBS</code>)が開発したカルダノ情報ボットです。
 
-いま使えるコマンドはこちらです。:
+現在、以下のコマンドが入力できます:
 
 /start
-/pool ティッカー
+/pool プールティッカー
 /epoch
 /help
 /language 言語
@@ -245,10 +245,10 @@ _help_reply_KR = """
 """
 
 _help_reply_JP = """
-いま使えるコマンドはこちらです。:
+現在、以下のコマンドが入力できます:
 
 /start
-/pool ティッカー
+/pool プールティッカー
 /epoch
 /help
 /language 言語
@@ -294,13 +294,13 @@ _epoch_reply_KR = """
 """
 
 _epoch_reply_JP = """
-取得した情報:
+エポク状況は:
 
-🔄 <b>エポックの進捗</b>
+🔄 <b>エポク状況</b>
 <code>{progress_bar} {perc:.1f}%</code>
-    現在のエポック: <code>{current_epoch}</code>
+    現在のエポク: <code>{current_epoch}</code>
     スロット: <code>{current_slot}/432000</code>
-    残りの期間: <code>{remaining_time}</code>
+    エポクの残り時間: <code>{remaining_time}</code>
 """
 
 epoch_reply = {
