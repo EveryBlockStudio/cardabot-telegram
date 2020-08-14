@@ -283,6 +283,11 @@ Here what I got:
     Current epoch: <code>{current_epoch}</code>
     Slots: <code>{current_slot}/432000</code>
     Remaining time: <code>{remaining_time}</code>
+
+🖧 <b>Network info</b>
+    Decentralisation: <code>{d_param:.1f}%</code>
+    In reserves: <code>{reserves} ₳</code>
+    In treasury: <code>{treasury} ₳</code>
 """
 
 _epoch_reply_PT = """
@@ -293,6 +298,11 @@ Aqui o que eu encontrei:
     Época atual: <code>{current_epoch}</code>
     Slots: <code>{current_slot}/432000</code>
     Tempo restante: <code>{remaining_time}</code>
+
+🖧 <b>Informações da rede</b>
+    Descentralização: <code>{d_param:.1f}%</code>
+    Nas reservas: <code>{reserves} ₳</code>
+    No tesouro: <code>{treasury} ₳</code>
 """
 
 _epoch_reply_KR = """
@@ -303,6 +313,11 @@ _epoch_reply_KR = """
     현재 에포크: <code>{current_epoch}</code>
     슬롯: <code>{current_slot}/432000</code>
     에포크 남은 시간: <code>{remaining_time}</code>
+
+🖧 <b>네트워크 정보</b>
+    분산: <code>{d_param:.1f}%</code>
+    준비금: <code>{reserves} ₳</code>
+    국고 금액: <code>{treasury} ₳</code>
 """
 
 _epoch_reply_JP = """
@@ -313,6 +328,11 @@ _epoch_reply_JP = """
     現在のエポク: <code>{current_epoch}</code>
     スロット: <code>{current_slot}/432000</code>
     エポクの残り時間: <code>{remaining_time}</code>
+
+🖧 <b>ネットワーク情報</b>
+    地方分権: <code>{d_param:.1f}%</code>
+    引当金: <code>{reserves} ₳</code>
+    財務省の金額:<code>{treasury} ₳</code>
 """
 
 epoch_reply = {

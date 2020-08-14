@@ -1,12 +1,14 @@
 from credentials import bot_token, wallet_url, database_url#, database_credentials
 from reply_templates import *
-from telegram.ext import Updater, CommandHandler, DictPersistence, PicklePersistence
+from telegram.ext import Updater, CommandHandler
 from telegram import Bot
 import logging
 import requests
 import random
 from datetime import datetime
 import json
+import glob
+import os
 
 from mwt import MWT
 
@@ -15,6 +17,10 @@ from mwt import MWT
 #from firebase_admin import credentials
 #from firebase_admin import firestore
 #from ptb_firebase_persistence import FirebasePersistence
+
+def get_last_file(pathtofile):
+    return max(
+        glob.glob(f"{pathtofile}/*.json"), key=os.path.getmtime)
 
 def get_saturat_symbol(saturat):
     saturat = float(saturat)
@@ -128,9 +134,9 @@ def lovelace_to_ada(value):
 
     # Transform int to str
     if best_unit == 'no':
-        ada_str = '{}'.format(ada_int)
+        ada_str = '{:.2f}'.format(ada_int)
     else:
-        ada_str = '{}{}'.format((ada_int/units[best_unit]), best_unit)
+        ada_str = '{:.2f}{}'.format(float(ada_int/units[best_unit]), best_unit)
 
     return ada_str
 
@@ -210,13 +216,27 @@ def epochinfo_callback(update, context):
         perc = (current_slot / total_slot) * 100
         progress_bar = get_progress_bar(perc)
 
+
+        # get information from db files
+        cwd = os.getcwd()
+        db_filename = get_last_file(cwd+'/db')
+        with open(db_filename, 'r') as f:
+            json_data_db = json.load(f)
+        d_param = json_data_db['esPp']['decentralisationParam']
+        reserves = json_data_db['esAccountState']['_reserves']
+        treasury = json_data_db['esAccountState']['_treasury']
+
+
         update.message.reply_html(
             epoch_reply[language].format(
                 progress_bar=progress_bar,
                 perc=perc,
                 current_epoch=current_epoch,
                 current_slot=current_slot,
-                remaining_time=beauty_time(remaining_time, language)))
+                remaining_time=beauty_time(remaining_time, language),
+                d_param=(1-float(d_param))*100,
+                reserves=lovelace_to_ada(reserves),
+                treasury=lovelace_to_ada(treasury)))
 
     else:
         context.bot.send_message(
@@ -291,6 +311,10 @@ def start_callback(update, context):
 
     update.message.reply_html(welcome_reply[language])
 
+def callback_minute(context):
+    context.bot.send_message(chat_id='162210437',
+                             text='One message every minute')
+
 
 if __name__ == '__main__':
     # Global language definitions
@@ -332,6 +356,12 @@ if __name__ == '__main__':
         use_context=True)
     dispatcher = updater.dispatcher
 
+
+    # start job queue for recurrent tasks
+    #j = updater.job_queue
+
+    # put job on queue
+    #job_minute = j.run_repeating(callback_minute, interval=60, first=30)
 
     # set basic logging
     logging.basicConfig(
