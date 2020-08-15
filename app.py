@@ -1,4 +1,4 @@
-from credentials import bot_token, wallet_url, database_url#, database_credentials
+from credentials import bot_token, wallet_url
 from reply_templates import *
 from telegram.ext import Updater, CommandHandler
 from telegram import Bot
@@ -12,11 +12,6 @@ import os
 
 from mwt import MWT
 
-
-#import firebase_admin
-#from firebase_admin import credentials
-#from firebase_admin import firestore
-#from ptb_firebase_persistence import FirebasePersistence
 
 def get_last_file(pathtofile):
     return max(

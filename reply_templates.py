@@ -284,7 +284,7 @@ Here what I got:
     Slots: <code>{current_slot}/432000</code>
     Remaining time: <code>{remaining_time}</code>
 
-🖧 <b>Network info</b>
+📶 <b>Network info</b>
     Decentralisation: <code>{d_param:.1f}%</code>
     In reserves: <code>{reserves} ₳</code>
     In treasury: <code>{treasury} ₳</code>
@@ -299,7 +299,7 @@ Aqui o que eu encontrei:
     Slots: <code>{current_slot}/432000</code>
     Tempo restante: <code>{remaining_time}</code>
 
-🖧 <b>Informações da rede</b>
+📶 <b>Informações da rede</b>
     Descentralização: <code>{d_param:.1f}%</code>
     Nas reservas: <code>{reserves} ₳</code>
     No tesouro: <code>{treasury} ₳</code>
@@ -314,7 +314,7 @@ _epoch_reply_KR = """
     슬롯: <code>{current_slot}/432000</code>
     에포크 남은 시간: <code>{remaining_time}</code>
 
-🖧 <b>네트워크 정보</b>
+📶 <b>네트워크 정보</b>
     분산: <code>{d_param:.1f}%</code>
     준비금: <code>{reserves} ₳</code>
     국고 금액: <code>{treasury} ₳</code>
@@ -329,7 +329,7 @@ _epoch_reply_JP = """
     スロット: <code>{current_slot}/432000</code>
     エポクの残り時間: <code>{remaining_time}</code>
 
-🖧 <b>ネットワーク情報</b>
+📶 <b>ネットワーク情報</b>
     地方分権: <code>{d_param:.1f}%</code>
     引当金: <code>{reserves} ₳</code>
     財務省の金額:<code>{treasury} ₳</code>
