@@ -20,7 +20,7 @@ _poolinfo_reply_EN = """
     live stake: <code>{live_stake} ₳</code>
       ↳ delegators: <code>{n_live_delegators}</code>
 
-<b>🕋 Blocks this /epoch</b>
+<b>🎲 Blocks this /epoch</b>
     expected blocks: <code>~{expected_blocks:.1f}</code>
     produced blocks: <code>{blocks}{block_produced_symbol}</code>
     rewards: <code>{rewards} ₳</code>
@@ -50,7 +50,7 @@ _poolinfo_reply_PT = """
     stake atual: <code>{live_stake} ₳</code>
       ↳ delegatores: <code>{n_live_delegators}</code>
 
-<b>🕋 Blocos nesta época (/epoch)</b>
+<b>🎲 Blocos nesta época (/epoch)</b>
     blocos esperados: <code>~{expected_blocks:.1f}</code>
     blocos produzidos: <code>{blocks}{block_produced_symbol}</code>
     recompensas: <code>{rewards} ₳</code>
@@ -80,7 +80,7 @@ _poolinfo_reply_KR = """
     live stake: <code>{live_stake} ₳</code>
       ↳ delegators: <code>{n_live_delegators}</code>
 
-<b>🕋 Blocks this /epoch</b>
+<b>🎲 Blocks this /epoch</b>
     expected blocks: <code>~{expected_blocks:.1f}</code>
     생성 블록 수: <code>{blocks}{block_produced_symbol}</code>
     보상: <code>{rewards} ₳</code>
@@ -110,7 +110,7 @@ _poolinfo_reply_JP = """
     live stake: <code>{live_stake} ₳</code>
       ↳ delegators: <code>{n_live_delegators}</code>
 
-<b>🕋 Blocks this /epoch</b>
+<b>🎲 Blocks this /epoch</b>
     expected blocks: <code>~{expected_blocks:.1f}</code>
     生成ブロック数: <code>{blocks}{block_produced_symbol}</code>
     rewards: <code>{rewards} ₳</code>
