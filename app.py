@@ -12,6 +12,18 @@ import os
 
 from mwt import MWT
 
+def calc_expected_blocks(pool_stake, total_stake, d_param):
+    blocks_in_epoch = 21600
+    blocks_available_pools = blocks_in_epoch * (1 - float(d_param))
+    expected_blocks = blocks_available_pools * (pool_stake / total_stake)
+
+    return expected_blocks
+
+def get_block_symbol(produced_blocks):
+    if produced_blocks > 0:
+        return ' 🎉'
+    else:
+        return ''
 
 def get_last_file(pathtofile):
     return max(
@@ -92,7 +104,6 @@ def beauty_time(timedelta, language):
     elif days == 0 and timedelta.seconds < hour_limit:
         return "{}h{}m".format(int(hours_intdiv), int(remaining_min_intdiv))
 
-
     else:
         if days > 1:
             return "{} {}, {}h{}m".format(days, days_text[language], int(hours_intdiv), int(remaining_min_intdiv))
@@ -129,7 +140,7 @@ def lovelace_to_ada(value):
 
     # Transform int to str
     if best_unit == 'no':
-        ada_str = '{:.2f}'.format(ada_int)
+        ada_str = '{:.0f}'.format(ada_int)
     else:
         ada_str = '{:.2f}{}'.format(float(ada_int/units[best_unit]), best_unit)
 
@@ -220,6 +231,16 @@ def epochinfo_callback(update, context):
         d_param = json_data_db['esPp']['decentralisationParam']
         reserves = json_data_db['esAccountState']['_reserves']
         treasury = json_data_db['esAccountState']['_treasury']
+        total_live_stake = json_data_db['total_live_stake']
+        total_active_stake = json_data_db['total_active_stake']
+
+        # get current time
+        current_time =  datetime.utcnow()
+        last_update_time = datetime.strptime(
+            json_data_db['timestamp'],
+            "%Y-%m-%dT%H-%M-%S")
+        # calc diff time of last update
+        updated_time_ago = current_time - last_update_time
 
 
         update.message.reply_html(
@@ -231,7 +252,10 @@ def epochinfo_callback(update, context):
                 remaining_time=beauty_time(remaining_time, language),
                 d_param=(1-float(d_param))*100,
                 reserves=lovelace_to_ada(reserves),
-                treasury=lovelace_to_ada(treasury)))
+                treasury=lovelace_to_ada(treasury),
+                live_stake=lovelace_to_ada(total_live_stake),
+                active_stake=lovelace_to_ada(total_active_stake),
+                updated_time_ago=beauty_time(updated_time_ago, language)))
 
     else:
         context.bot.send_message(
@@ -258,24 +282,63 @@ def poolinfo_callback(update, context):
 
     for ind, pool in enumerate(json_data):
         if 'metadata' in pool and pool['metadata']['ticker'].upper() == typed_ticker.upper():
+            # Wallet data
             gotpool = True
             pool_name = pool['metadata']['name']
             homepage = pool['metadata']['homepage']
             pool_ticker = pool['metadata']['ticker']
             desc = pool['metadata']['description']
+
             pool_id = pool['id']
             site = pool['metadata']['homepage']
-            rank = ind
+            rank = ind + 1
             pledge = pool['pledge']['quantity']
-            pledge_ada = lovelace_to_ada(pledge)
             cost = pool['cost']['quantity']
-            cost_ada = lovelace_to_ada(cost)
             margin_perc = pool['margin']['quantity']
+
+            # Metrics from wallet
             saturat = pool['metrics']['saturation']
             rel_stake_perc = pool['metrics']['relative_stake']['quantity']
             blocks = pool['metrics']['produced_blocks']['quantity']
             rewards = pool['metrics']['non_myopic_member_rewards']['quantity']
-            rewards_ada = lovelace_to_ada(rewards)
+
+            try:
+                # ledger-state data
+                # get information from db files
+                cwd = os.getcwd()
+                db_filename = get_last_file(cwd+'/db')
+                with open(db_filename, 'r') as f:
+                    json_data_db = json.load(f)
+
+                total_active_stake = json_data_db['total_active_stake']
+                d_param = json_data_db['esPp']['decentralisationParam']
+
+                stake_data = json_data_db['pools_stake'][pool_id]
+                pool_live_stake = stake_data['live']['amount_stake']
+                pool_n_live_delegators = stake_data['live']['n_delegators']
+
+                pool_active_stake = stake_data['active']['amount_stake']
+                pool_n_active_delegators = stake_data['active']['n_delegators']
+
+            except:
+                gotpool = False
+                break
+
+            # get current time
+            current_time =  datetime.utcnow()
+            last_update_time = datetime.strptime(
+                json_data_db['timestamp'],
+                "%Y-%m-%dT%H-%M-%S")
+            # calc diff time of last update
+            updated_time_ago = current_time - last_update_time
+
+            # get expected blocks for the pool
+            expected_blocks = calc_expected_blocks(
+                pool_active_stake,
+                total_active_stake,
+                d_param)
+
+
             update.message.reply_html(
                 poolinfo_reply[language].format(
                     quote=True,
@@ -285,14 +348,21 @@ def poolinfo_callback(update, context):
                     homepage=homepage,
                     desc=desc,
                     pool_rank=rank,
-                    pledge_ada=pledge_ada,
-                    cost_ada=cost_ada,
+                    pledge=lovelace_to_ada(pledge),
+                    cost=lovelace_to_ada(cost),
                     margin_perc=margin_perc,
                     saturat=saturat*100,
                     saturat_symbol=get_saturat_symbol(saturat),
                     rel_stake_perc=rel_stake_perc,
+                    expected_blocks=expected_blocks,
                     blocks=blocks,
-                    rewards_ada=rewards_ada))
+                    block_produced_symbol=get_block_symbol(blocks),
+                    rewards=lovelace_to_ada(rewards),
+                    live_stake=lovelace_to_ada(pool_live_stake),
+                    n_live_delegators=pool_n_live_delegators,
+                    active_stake=lovelace_to_ada(pool_active_stake),
+                    n_active_delegators=pool_n_active_delegators,
+                    updated_time_ago=beauty_time(updated_time_ago,language)))
             break
 
     if not gotpool:

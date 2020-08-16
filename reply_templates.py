@@ -6,17 +6,26 @@ _poolinfo_reply_EN = """
 <b>🆔 Pool ID</b>
 <code>{pool_id}</code>
 
-<b>ℹ️ Pool info</b>
+<b> ℹ️ Pool info</b>
     rank: <code>#️{pool_rank} (random)</code>
-    pledge: <code>{pledge_ada} ₳</code>
-    cost: <code>{cost_ada} ₳</code>
+    pledge: <code>{pledge} ₳</code>
+    cost: <code>{cost} ₳</code>
     margin: <code>{margin_perc}%</code>
 
 <b>📈 Metrics</b>
     saturation: <code>{saturat:.2f}% {saturat_symbol}</code>
-    controlled stake: <code>{rel_stake_perc:.2f}%</code>
-    produced blocks: <code>{blocks}</code>
-    rewards: <code>{rewards_ada} ₳</code>
+    controlled stake: <code>{rel_stake_perc:.3f}%</code>
+    active stake: <code>{active_stake} ₳</code>
+      ↳ delegators: <code>{n_active_delegators}</code>
+    live stake: <code>{live_stake} ₳</code>
+      ↳ delegators: <code>{n_live_delegators}</code>
+
+<b>🕋 Blocks this /epoch</b>
+    expected blocks: <code>~{expected_blocks:.1f}</code>
+    produced blocks: <code>{blocks}{block_produced_symbol}</code>
+    rewards: <code>{rewards} ₳</code>
+
+<i>Live metrics updated {updated_time_ago} ago.</i>
 """
 
 _poolinfo_reply_PT = """
@@ -29,15 +38,24 @@ _poolinfo_reply_PT = """
 
 <b>ℹ️ Informações</b>
     rank: <code>#️{pool_rank} (aleatório)</code>
-    pledge: <code>{pledge_ada} ₳</code>
-    custo: <code>{cost_ada} ₳</code>
+    pledge: <code>{pledge} ₳</code>
+    custo: <code>{cost} ₳</code>
     margem: <code>{margin_perc}%</code>
 
 <b>📈 Métricas</b>
     saturação: <code>{saturat:.2f}% {saturat_symbol}</code>
-    stake controlado: <code>{rel_stake_perc:.2f}%</code>
-    blocos produzidos: <code>{blocks}</code>
-    recompensas: <code>{rewards_ada} ₳</code>
+    stake controlado: <code>{rel_stake_perc:.3f}%</code>
+    stake ativo: <code>{active_stake} ₳</code>
+      ↳ delegatores: <code>{n_active_delegators}</code>
+    stake atual: <code>{live_stake} ₳</code>
+      ↳ delegatores: <code>{n_live_delegators}</code>
+
+<b>🕋 Blocos nesta época (/epoch)</b>
+    blocos esperados: <code>~{expected_blocks:.1f}</code>
+    blocos produzidos: <code>{blocks}{block_produced_symbol}</code>
+    recompensas: <code>{rewards} ₳</code>
+
+<i>Métricas atualizadas {updated_time_ago} atrás.</i>
 """
 
 _poolinfo_reply_KR = """
@@ -50,15 +68,24 @@ _poolinfo_reply_KR = """
 
 <b>ℹ️ 풀 정보</b>
     순위: <code>#️{pool_rank} (랜덤)</code>
-    담보량: <code>{pledge_ada} ₳</code>
-    고정수수료: <code>{cost_ada} ₳</code>
+    담보량: <code>{pledge} ₳</code>
+    고정수수료: <code>{cost} ₳</code>
     상대수수료: <code>{margin_perc}%</code>
 
 <b>📈 상세정보</b>
     포화도: <code>{saturat:.2f}% {saturat_symbol}</code>
-    위임량: <code>{rel_stake_perc:.2f}%</code>
-    생성 블록 수: <code>{blocks}</code>
-    보상: <code>{rewards_ada} ₳</code>
+    위임량: <code>{rel_stake_perc:.3f}%</code>
+    active stake: <code>{active_stake} ₳</code>
+      ↳ delegators: <code>{n_active_delegators}</code>
+    live stake: <code>{live_stake} ₳</code>
+      ↳ delegators: <code>{n_live_delegators}</code>
+
+<b>🕋 Blocks this /epoch</b>
+    expected blocks: <code>~{expected_blocks:.1f}</code>
+    생성 블록 수: <code>{blocks}{block_produced_symbol}</code>
+    보상: <code>{rewards} ₳</code>
+
+<i>Live metrics updated {updated_time_ago} ago.</i>
 """
 
 _poolinfo_reply_JP = """
@@ -71,15 +98,24 @@ _poolinfo_reply_JP = """
 
 <b>ℹ️ プール情報</b>
     順位: <code>#️{pool_rank} (無作為)</code>
-    担保量: <code>{pledge_ada} ₳</code>
-    固定手数料: <code>{cost_ada} ₳</code>
+    担保量: <code>{pledge} ₳</code>
+    固定手数料: <code>{cost} ₳</code>
     プール報酬手数料: <code>{margin_perc}%</code>
 
 <b>📈 メトリックス</b>
     飽和度: <code>{saturat:.2f}% {saturat_symbol}</code>
-    現在ステーキング量: <code>{rel_stake_perc:.2f}%</code>
-    生成ブロック数: <code>{blocks}</code>
-    報酬: <code>{rewards_ada} ₳</code>
+    現在ステーキング量: <code>{rel_stake_perc:.3f}%</code>
+    active stake: <code>{active_stake} ₳</code>
+      ↳ delegators: <code>{n_active_delegators}</code>
+    live stake: <code>{live_stake} ₳</code>
+      ↳ delegators: <code>{n_live_delegators}</code>
+
+<b>🕋 Blocks this /epoch</b>
+    expected blocks: <code>~{expected_blocks:.1f}</code>
+    生成ブロック数: <code>{blocks}{block_produced_symbol}</code>
+    rewards: <code>{rewards} ₳</code>
+
+<i>Live metrics updated {updated_time_ago} ago.</i>
 """
 
 poolinfo_reply = {
@@ -276,63 +312,79 @@ help_reply = {
 ###############################################################################
 
 _epoch_reply_EN = """
-Here what I got:
-
 🔄 <b>Epoch progress</b>
 <code>{progress_bar} {perc:.1f}%</code>
-    Current epoch: <code>{current_epoch}</code>
-    Slots: <code>{current_slot}/432000</code>
-    Remaining time: <code>{remaining_time}</code>
+    current epoch: <code>{current_epoch}</code>
+    slots: <code>{current_slot}/432000</code>
+    decentralisation: <code>{d_param:.0f}%</code>
+    remaining time: <code>{remaining_time}</code>
 
-📶 <b>Network info</b>
-    Decentralisation: <code>{d_param:.1f}%</code>
-    In reserves: <code>{reserves} ₳</code>
-    In treasury: <code>{treasury} ₳</code>
+💰 <b>Stake info</b>
+    active stake: <code>{active_stake} ₳</code>
+    live stake: <code>{live_stake} ₳</code>
+
+🏦 <b>Locked funds</b>
+    in reserves: <code>{reserves} ₳</code>
+    in treasury: <code>{treasury} ₳</code>
+
+<i>Live metrics updated {updated_time_ago} ago.</i>
 """
 
 _epoch_reply_PT = """
-Aqui o que eu encontrei:
-
 🔄 <b>Progresso da época</b>
 <code>{progress_bar} {perc:.1f}%</code>
-    Época atual: <code>{current_epoch}</code>
-    Slots: <code>{current_slot}/432000</code>
-    Tempo restante: <code>{remaining_time}</code>
+    época atual: <code>{current_epoch}</code>
+    slots: <code>{current_slot}/432000</code>
+    descentralização: <code>{d_param:.0f}%</code>
+    tempo restante: <code>{remaining_time}</code>
 
-📶 <b>Informações da rede</b>
-    Descentralização: <code>{d_param:.1f}%</code>
-    Nas reservas: <code>{reserves} ₳</code>
-    No tesouro: <code>{treasury} ₳</code>
+💰 <b>Informação do stake</b>
+    stake ativo: <code>{active_stake} ₳</code>
+    stake atual: <code>{live_stake} ₳</code>
+
+🏦 <b>Fundos bloqueados</b>
+    nas reservas: <code>{reserves} ₳</code>
+    no tesouro: <code>{treasury} ₳</code>
+
+<i>Métricas atualizadas {updated_time_ago} atrás.</i>
 """
 
 _epoch_reply_KR = """
-검색 결과:
-
 🔄 <b>에포크 진행 상황</b>
 <code>{progress_bar} {perc:.1f}%</code>
     현재 에포크: <code>{current_epoch}</code>
     슬롯: <code>{current_slot}/432000</code>
+    분산: <code>{d_param:.0f}%</code>
     에포크 남은 시간: <code>{remaining_time}</code>
 
-📶 <b>네트워크 정보</b>
-    분산: <code>{d_param:.1f}%</code>
+💰 <b>Stake info</b>
+    active stake: <code>{active_stake} ₳</code>
+    live stake: <code>{live_stake} ₳</code>
+
+🏦 <b>Locked funds</b>
     준비금: <code>{reserves} ₳</code>
     국고 금액: <code>{treasury} ₳</code>
+
+<i>Live metrics updated {updated_time_ago} ago.</i>
 """
 
 _epoch_reply_JP = """
-エポク状況は:
-
 🔄 <b>エポク状況</b>
 <code>{progress_bar} {perc:.1f}%</code>
     現在のエポク: <code>{current_epoch}</code>
     スロット: <code>{current_slot}/432000</code>
+    地方分権: <code>{d_param:.0f}%</code>
     エポクの残り時間: <code>{remaining_time}</code>
 
-📶 <b>ネットワーク情報</b>
-    地方分権: <code>{d_param:.1f}%</code>
+💰 <b>Stake info</b>
+    active stake: <code>{active_stake} ₳</code>
+    live stake: <code>{live_stake} ₳</code>
+
+🏦 <b>Locked funds</b>
     引当金: <code>{reserves} ₳</code>
-    財務省の金額:<code>{treasury} ₳</code>
+    財務省の金額: <code>{treasury} ₳</code>
+
+<i>Live metrics updated {updated_time_ago} ago.</i>
 """
 
 epoch_reply = {
