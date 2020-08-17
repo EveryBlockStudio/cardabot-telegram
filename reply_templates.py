@@ -69,23 +69,23 @@ _poolinfo_reply_KR = """
 <b>ℹ️ 풀 정보</b>
     순위: <code>#️{pool_rank} (랜덤)</code>
     담보량: <code>{pledge} ₳</code>
-    고정수수료: <code>{cost} ₳</code>
-    상대수수료: <code>{margin_perc}%</code>
+    풀고정수수료: <code>{cost} ₳</code>
+    풀운영수수료: <code>{margin_perc}%</code>
 
 <b>📈 상세정보</b>
     포화도: <code>{saturat:.2f}% {saturat_symbol}</code>
-    위임량: <code>{rel_stake_perc:.3f}%</code>
-    active stake: <code>{active_stake} ₳</code>
-      ↳ delegators: <code>{n_active_delegators}</code>
-    live stake: <code>{live_stake} ₳</code>
-      ↳ delegators: <code>{n_live_delegators}</code>
+    위임점유율: <code>{rel_stake_perc:.3f}%</code>
+    활성 위임량: <code>{active_stake} ₳</code>
+      ↳ 위임자수: <code>{n_active_delegators}</code>
+    현재 위임량: <code>{live_stake} ₳</code>
+      ↳ 위임자수: <code>{n_live_delegators}</code>
 
-<b>🎲 Blocks this /epoch</b>
-    expected blocks: <code>~{expected_blocks:.1f}</code>
-    생성 블록 수: <code>{blocks}{block_produced_symbol}</code>
+<b>🎲 해당 에포크 블록</b>
+    예측 블록수: <code>~{expected_blocks:.1f}</code>
+    생성 블록수: <code>{blocks}{block_produced_symbol}</code>
     보상: <code>{rewards} ₳</code>
 
-<i>Live metrics updated {updated_time_ago} ago.</i>
+<i>실시간 메트릭스 업데이트 {updated_time_ago} 전</i>
 """
 
 _poolinfo_reply_JP = """
@@ -99,23 +99,23 @@ _poolinfo_reply_JP = """
 <b>ℹ️ プール情報</b>
     順位: <code>#️{pool_rank} (無作為)</code>
     担保量: <code>{pledge} ₳</code>
-    固定手数料: <code>{cost} ₳</code>
-    プール報酬手数料: <code>{margin_perc}%</code>
+    プール固定手数料: <code>{cost} ₳</code>
+    プール運営手数料: <code>{margin_perc}%</code>
 
 <b>📈 メトリックス</b>
     飽和度: <code>{saturat:.2f}% {saturat_symbol}</code>
-    現在ステーキング量: <code>{rel_stake_perc:.3f}%</code>
-    active stake: <code>{active_stake} ₳</code>
-      ↳ delegators: <code>{n_active_delegators}</code>
-    live stake: <code>{live_stake} ₳</code>
-      ↳ delegators: <code>{n_live_delegators}</code>
+    現在ステーキング占め率: <code>{rel_stake_perc:.3f}%</code>
+    活性委任量: <code>{active_stake} ₳</code>
+      ↳ 委任者数: <code>{n_active_delegators}</code>
+    現在委任量: <code>{live_stake} ₳</code>
+      ↳ 委任者数: <code>{n_live_delegators}</code>
 
-<b>🎲 Blocks this /epoch</b>
-    expected blocks: <code>~{expected_blocks:.1f}</code>
+<b>🎲 当該エポクのブロック</b>
+    予測ブロック数: <code>~{expected_blocks:.1f}</code>
     生成ブロック数: <code>{blocks}{block_produced_symbol}</code>
-    rewards: <code>{rewards} ₳</code>
+    報酬: <code>{rewards} ₳</code>
 
-<i>Live metrics updated {updated_time_ago} ago.</i>
+<i>ライブメトリックスアップデート{updated_time_ago} 前</i>
 """
 
 poolinfo_reply = {
@@ -354,18 +354,18 @@ _epoch_reply_KR = """
 <code>{progress_bar} {perc:.1f}%</code>
     현재 에포크: <code>{current_epoch}</code>
     슬롯: <code>{current_slot}/432000</code>
-    분산: <code>{d_param:.0f}%</code>
+    분산지수: <code>{d_param:.0f}%</code>
     에포크 남은 시간: <code>{remaining_time}</code>
 
-💰 <b>Stake info</b>
-    active stake: <code>{active_stake} ₳</code>
-    live stake: <code>{live_stake} ₳</code>
+💰 <b>위임 정보</b>
+    활성 위임량: <code>{active_stake} ₳</code>
+    현재 위임량: <code>{live_stake} ₳</code>
 
-🏦 <b>Locked funds</b>
+🏦 <b>봉쇄 자금</b>
     준비금: <code>{reserves} ₳</code>
-    국고 금액: <code>{treasury} ₳</code>
+    재무금고: <code>{treasury} ₳</code>
 
-<i>Live metrics updated {updated_time_ago} ago.</i>
+<i>실시간 메트릭스 업데이트 {updated_time_ago} 전</i>
 """
 
 _epoch_reply_JP = """
@@ -373,18 +373,18 @@ _epoch_reply_JP = """
 <code>{progress_bar} {perc:.1f}%</code>
     現在のエポク: <code>{current_epoch}</code>
     スロット: <code>{current_slot}/432000</code>
-    地方分権: <code>{d_param:.0f}%</code>
-    エポクの残り時間: <code>{remaining_time}</code>
+    分散化指数: <code>{d_param:.0f}%</code>
+    エポク残り時間: <code>{remaining_time}</code>
 
-💰 <b>Stake info</b>
-    active stake: <code>{active_stake} ₳</code>
-    live stake: <code>{live_stake} ₳</code>
+💰 <b>委任量情報</b>
+    活性委任量: <code>{active_stake} ₳</code>
+    現在委任量: <code>{live_stake} ₳</code>
 
-🏦 <b>Locked funds</b>
-    引当金: <code>{reserves} ₳</code>
-    財務省の金額: <code>{treasury} ₳</code>
+🏦 <b>封鎖資金</b>
+    準備金: <code>{reserves} ₳</code>
+    財務金庫: <code>{treasury} ₳</code>
 
-<i>Live metrics updated {updated_time_ago} ago.</i>
+<i>ライブメトリックスアップデート{updated_time_ago} 前</i>
 """
 
 epoch_reply = {
