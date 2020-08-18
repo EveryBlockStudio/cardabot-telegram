@@ -198,19 +198,30 @@ def change_lang_callback(update, context):
 def epochinfo_callback(update, context):
     language = get_language(update.effective_chat.id)
 
-    target = '/network/information'
     total_slot = 432000
+    total_supply = 45000000000000000
+
+    target = '/network/information'
+    target_params = '/network/parameters'
 
     r = requests.get(url+target)
 
-    if r.status_code == 200:
+    r_params = requests.get(url+target_params)
 
-        json_data = r.json()
+    if r.status_code == 200 and r_params.status_code == 200:
+
+        json_data_netinfo = r.json()
+        json_data_params = r_params.json()
+
+
+        decentralisation_level = json_data_params['decentralization_level']['quantity']
+        #print(decentralisation_level.keys())
+
 
         # parse json
-        current_epoch = json_data['network_tip']['epoch_number']
-        current_slot = json_data['network_tip']['slot_number']
-        next_epoch_time_str = json_data['next_epoch']['epoch_start_time']
+        current_epoch = json_data_netinfo['network_tip']['epoch_number']
+        current_slot = json_data_netinfo['network_tip']['slot_number']
+        next_epoch_time_str = json_data_netinfo['next_epoch']['epoch_start_time']
 
         # get current time
         current_time =  datetime.utcnow()
@@ -233,6 +244,10 @@ def epochinfo_callback(update, context):
         treasury = json_data_db['esAccountState']['_treasury']
         total_live_stake = json_data_db['total_live_stake']
         total_active_stake = json_data_db['total_active_stake']
+        circulating_supply =  total_supply - (reserves + treasury)
+
+        perc_live_stake_circulating_supply = (total_live_stake / circulating_supply) * 100
+        perc_active_stake_circulating_supply = (total_active_stake / circulating_supply) * 100
 
         # get current time
         current_time =  datetime.utcnow()
@@ -250,12 +265,16 @@ def epochinfo_callback(update, context):
                 current_epoch=current_epoch,
                 current_slot=current_slot,
                 remaining_time=beauty_time(remaining_time, language),
-                d_param=(1-float(d_param))*100,
+                decentralization=decentralisation_level,
                 reserves=lovelace_to_ada(reserves),
                 treasury=lovelace_to_ada(treasury),
                 live_stake=lovelace_to_ada(total_live_stake),
                 active_stake=lovelace_to_ada(total_active_stake),
-                updated_time_ago=beauty_time(updated_time_ago, language)))
+                updated_time_ago=beauty_time(updated_time_ago, language),
+                live_perc_supply=perc_live_stake_circulating_supply,
+                active_perc_supply=perc_active_stake_circulating_supply,
+                circulating_supply=lovelace_to_ada(circulating_supply)))
+               #d_param=(1-float(d_param))*100,
 
     else:
         context.bot.send_message(
@@ -301,6 +320,7 @@ def poolinfo_callback(update, context):
             rel_stake_perc = pool['metrics']['relative_stake']['quantity']
             blocks = pool['metrics']['produced_blocks']['quantity']
             rewards = pool['metrics']['non_myopic_member_rewards']['quantity']
+
 
             try:
                 # ledger-state data

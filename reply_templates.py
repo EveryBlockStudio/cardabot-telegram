@@ -46,9 +46,9 @@ _poolinfo_reply_PT = """
     saturação: <code>{saturat:.2f}% {saturat_symbol}</code>
     stake controlado: <code>{rel_stake_perc:.3f}%</code>
     stake ativo: <code>{active_stake} ₳</code>
-      ↳ delegatores: <code>{n_active_delegators}</code>
+      ↳ delegadores: <code>{n_active_delegators}</code>
     stake atual: <code>{live_stake} ₳</code>
-      ↳ delegatores: <code>{n_live_delegators}</code>
+      ↳ delegadores: <code>{n_live_delegators}</code>
 
 <b>🎲 Blocos nesta época (/epoch)</b>
     blocos esperados: <code>~{expected_blocks:.1f}</code>
@@ -316,14 +316,15 @@ _epoch_reply_EN = """
 <code>{progress_bar} {perc:.1f}%</code>
     current epoch: <code>{current_epoch}</code>
     slots: <code>{current_slot}/432000</code>
-    decentralisation: <code>{d_param:.0f}%</code>
+    decentralization: <code>{decentralization}%</code>
     remaining time: <code>{remaining_time}</code>
 
 💰 <b>Stake info</b>
-    active stake: <code>{active_stake} ₳</code>
-    live stake: <code>{live_stake} ₳</code>
+    active stake: <code>{active_stake} ₳ ({active_perc_supply:.1f}%)</code>
+    live stake: <code>{live_stake} ₳ ({live_perc_supply:.1f}%)</code>
 
-🏦 <b>Locked funds</b>
+🏦 <b>Funds</b>
+    circulating supply: <code>{circulating_supply} ₳</code>
     in reserves: <code>{reserves} ₳</code>
     in treasury: <code>{treasury} ₳</code>
 
@@ -335,14 +336,15 @@ _epoch_reply_PT = """
 <code>{progress_bar} {perc:.1f}%</code>
     época atual: <code>{current_epoch}</code>
     slots: <code>{current_slot}/432000</code>
-    descentralização: <code>{d_param:.0f}%</code>
+    descentralização: <code>{decentralization}%</code>
     tempo restante: <code>{remaining_time}</code>
 
 💰 <b>Informação do stake</b>
-    stake ativo: <code>{active_stake} ₳</code>
-    stake atual: <code>{live_stake} ₳</code>
+    stake ativo: <code>{active_stake} ₳ ({active_perc_supply:.1f}%)</code>
+    stake atual: <code>{live_stake} ₳ ({live_perc_supply:.1f}%)</code>
 
-🏦 <b>Fundos bloqueados</b>
+🏦 <b>Fundos</b>
+    em circulação: <code>{circulating_supply} ₳</code>
     nas reservas: <code>{reserves} ₳</code>
     no tesouro: <code>{treasury} ₳</code>
 
@@ -354,14 +356,15 @@ _epoch_reply_KR = """
 <code>{progress_bar} {perc:.1f}%</code>
     현재 에포크: <code>{current_epoch}</code>
     슬롯: <code>{current_slot}/432000</code>
-    분산지수: <code>{d_param:.0f}%</code>
+    분산지수: <code>{decentralization}%</code>
     에포크 남은 시간: <code>{remaining_time}</code>
 
 💰 <b>위임 정보</b>
-    활성 위임량: <code>{active_stake} ₳</code>
-    현재 위임량: <code>{live_stake} ₳</code>
+    활성 위임량: <code>{active_stake} ₳ ({active_perc_supply:.1f}%)</code>
+    현재 위임량: <code>{live_stake} ₳ ({live_perc_supply:.1f}%)</code>
 
-🏦 <b>봉쇄 자금</b>
+🏦 <b>자금</b>
+    유통량: <code>{circulating_supply} ₳</code>
     준비금: <code>{reserves} ₳</code>
     재무금고: <code>{treasury} ₳</code>
 
@@ -373,14 +376,15 @@ _epoch_reply_JP = """
 <code>{progress_bar} {perc:.1f}%</code>
     現在のエポク: <code>{current_epoch}</code>
     スロット: <code>{current_slot}/432000</code>
-    分散化指数: <code>{d_param:.0f}%</code>
+    分散化指数: <code>{decentralization}%</code>
     エポク残り時間: <code>{remaining_time}</code>
 
 💰 <b>委任量情報</b>
-    活性委任量: <code>{active_stake} ₳</code>
-    現在委任量: <code>{live_stake} ₳</code>
+    活性委任量: <code>{active_stake} ₳ ({active_perc_supply:.1f}%)</code>
+    現在委任量: <code>{live_stake} ₳ ({live_perc_supply:.1f}%)</code>
 
-🏦 <b>封鎖資金</b>
+🏦 <b>資金</b>
+    循環供給量: <code>{circulating_supply} ₳</code>
     準備金: <code>{reserves} ₳</code>
     財務金庫: <code>{treasury} ₳</code>
 
