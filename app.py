@@ -12,6 +12,10 @@ import os
 
 from mwt import MWT
 
+def calc_pool_saturation(pool_stake, circ_supply, nOpt):
+    sat_point = circ_supply/nOpt
+    return pool_stake/sat_point
+
 def calc_expected_blocks(pool_stake, total_stake, d_param):
     blocks_in_epoch = 21600
     blocks_available_pools = blocks_in_epoch * (1 - float(d_param))
@@ -378,7 +382,7 @@ def poolinfo_callback(update, context):
             margin_perc = pool['margin']['quantity']
 
             # Metrics from wallet
-            saturat = pool['metrics']['saturation']
+            #saturat = pool['metrics']['saturation']
             rel_stake_perc = pool['metrics']['relative_stake']['quantity']
             blocks = pool['metrics']['produced_blocks']['quantity']
             rewards = pool['metrics']['non_myopic_member_rewards']['quantity']
@@ -418,6 +422,16 @@ def poolinfo_callback(update, context):
                 pool_active_stake,
                 total_active_stake,
                 d_param)
+
+            # calculate saturation from live stake
+            total_supply = 45000000000000000
+            reserves = json_data_db['esAccountState']['_reserves']
+            treasury = json_data_db['esAccountState']['_treasury']
+            circulating_supply =  total_supply - (reserves + treasury)
+            saturat = calc_pool_saturation(
+                pool_live_stake,
+                circulating_supply,
+                nOpt=150)
 
 
             update.message.reply_html(
