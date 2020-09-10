@@ -52,7 +52,7 @@ _poolinfo_reply_PT = """
 
 <b>🎲 Blocos</b>
     blocos esperados (nesta época): <code>~{expected_blocks:.1f}</code>
-    total blocos produzidos: <code>{blocks}{block_produced_symbol}</code>
+    total de blocos produzidos: <code>{blocks}{block_produced_symbol}</code>
 
 <i>Métricas atualizadas {updated_time_ago} atrás.</i>
 """
