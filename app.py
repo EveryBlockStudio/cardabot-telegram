@@ -38,31 +38,49 @@ def get_saturat_symbol(saturat):
     else:
         return '🔴'
 
-def get_language(chat_id_int):
+def get_chat_filename(chat_id_int):
+    cwd = os.getcwd()
     chat_id = str(chat_id_int)
+    return cwd + '/chats/' + chat_id + '.json'
 
-    with open('language_options.json', 'r') as f:
-        json_obj = json.load(f)
 
-    if chat_id in json_obj:
+def get_chat_obj(chat_id_int):
+    chat_filename = get_chat_filename(chat_id_int)
 
-        language = json_obj[chat_id]
+    # Create a new chat file if it doesn't exist
+    if not os.path.exists(chat_filename):
+        with open(chat_filename, 'w') as f:
+            json_obj = {}
+            json_obj['chat_id'] = chat_id_int
+            json_obj['language'] = 'EN'
+            json_obj['default_pool'] = 'EBS'
 
+            json.dump(json_obj, f)
+
+    # If the chat file already exist, just open it to return the object
     else:
-        language = 'EN'
+        with open(chat_filename, 'r') as f:
+            json_obj = json.load(f)
 
-    return language
+    return json_obj
 
+def set_chat_obj(chat_obj):
+    chat_filename = get_chat_filename(chat_obj['chat_id'])
+
+    with open(chat_filename, 'w') as f:
+        json.dump(chat_obj, f)
 
 def set_language(chat_id_int, lang):
-    chat_id = str(chat_id_int)
+    chat = get_chat_obj(chat_id_int)
+    chat['language'] = lang
 
-    with open('language_options.json', 'r') as f:
-        json_obj = json.load(f)
+    set_chat_obj(chat)
 
-    with open('language_options.json', 'w') as f:
-        json_obj[chat_id] = lang
-        json.dump(json_obj, f)
+def set_default_pool(chat_id_int, pool):
+    chat = get_chat_obj(chat_id_int)
+    chat['default_pool'] = pool
+
+    set_chat_obj(chat)
 
 
 def get_progress_bar(perc):
@@ -148,7 +166,8 @@ def lovelace_to_ada(value):
 
 
 def help_callback(update, context):
-    language = get_language(update.effective_chat.id)
+    chat = get_chat_obj(update.effective_chat.id)
+    language = chat['language']
 
 
     update.message.reply_html(help_reply[language])
@@ -160,7 +179,8 @@ def get_admin_ids(bot, chat_id):
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
 
 def change_lang_callback(update, context):
-    language = get_language(update.effective_chat.id)
+    chat = get_chat_obj(update.effective_chat.id)
+    language = chat['language']
 
     is_admin = False
     if update.effective_chat.type == 'group':
@@ -195,8 +215,44 @@ def change_lang_callback(update, context):
     else:
         update.message.reply_html(f"You're not authorized to do that 😞")
 
+def change_default_pool_callback(update, context):
+    chat = get_chat_obj(update.effective_chat.id)
+    language = chat['language']
+
+    is_admin = False
+    if update.effective_chat.type == 'group':
+        if update.effective_user.id in get_admin_ids(
+            context.bot,
+            update.message.chat_id):
+            is_admin = True
+    else:
+        is_admin = True
+
+    if is_admin:
+        # Extract language ID from message
+        if context.args:
+            user_pool = ' '.join(context.args).upper()
+
+            set_default_pool(update.effective_chat.id, user_pool)
+            update.message.reply_html(change_default_pool_reply[language])
+
+        else:
+            while True:
+                random_lang = random.choice(supported_languages)
+                if random_lang != language:
+                    language = random_lang
+                    break
+
+            set_language(update.effective_chat.id, language)
+            update.message.reply_html(change_lang_reply[language])
+
+    else:
+        update.message.reply_html(f"You're not authorized to do that 😞")
+
+
 def epochinfo_callback(update, context):
-    language = get_language(update.effective_chat.id)
+    chat = get_chat_obj(update.effective_chat.id)
+    language = chat['language']
 
     total_slot = 432000
     total_supply = 45000000000000000
@@ -283,11 +339,12 @@ def epochinfo_callback(update, context):
 
 
 def poolinfo_callback(update, context):
-    language = get_language(update.effective_chat.id)
+    chat = get_chat_obj(update.effective_chat.id)
+    language = chat['language']
 
     update.message.reply_html(poolinfo_reply_wait[language])
 
-    target = '/stake-pools?stake=0'
+    target = '/stake-pools?stake=1000000'
     r = requests.get(url+target)
 
     json_data = r.json()
@@ -295,12 +352,16 @@ def poolinfo_callback(update, context):
     if context.args:
         typed_ticker = ' '.join(context.args)
     else:
-        typed_ticker = 'EBS'
+        typed_ticker = chat['default_pool']
 
     gotpool = False
 
     for ind, pool in enumerate(json_data):
+
         if 'metadata' in pool and pool['metadata']['ticker'].upper() == typed_ticker.upper():
+            #print(ind,pool)
+            update.message.reply_html(pool)
+
             # Wallet data
             gotpool = True
             pool_name = pool['metadata']['name']
@@ -392,7 +453,8 @@ def poolinfo_callback(update, context):
 
 
 def start_callback(update, context):
-    language = get_language(update.effective_chat.id)
+    chat = get_chat_obj(update.effective_chat.id)
+    language = chat['language']
 
     update.message.reply_html(welcome_reply[language])
 
@@ -412,22 +474,6 @@ if __name__ == '__main__':
     # Define languages
     supported_languages = ['EN', 'PT', 'KR', 'JP']
 
-    # Use a service account
-    #cred = credentials.Certificate('certain-reducer-285817-0a6844d048c6.json')
-    #firebase_admin.initialize_app(cred)
-
-    #db = firestore.client()
-    #_database_credentials = json.load(
-    #    open('cardabot-firebase-adminsdk-15hps-084e67f4d8.json', 'r'))
-
-    #database_credentials = json.dumps(_database_credentials)
-
-    # create a persistence object with Firebase
-    #cardabot_persistence = FirebasePersistence(
-    #    database_url=database_url,
-    #    credentials=_database_credentials)
-    #cardabot_persistence = DictPersistence(filename='cardabot_persistence')
-    #persistence=cardabot_persistence,
 
     # Create cardabot persistence locally (DictPersistence)
     #cardabot_persistence = PicklePersistence()
@@ -468,6 +514,10 @@ if __name__ == '__main__':
     # language handler
     language_handler = CommandHandler('language', change_lang_callback)
     dispatcher.add_handler(language_handler)
+
+    # default pool handler
+    default_pool_handler = CommandHandler('setpool', change_default_pool_callback)
+    dispatcher.add_handler(default_pool_handler)
 
     # help handler
     help_handler = CommandHandler('help', help_callback)

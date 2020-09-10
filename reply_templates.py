@@ -7,7 +7,7 @@ _poolinfo_reply_EN = """
 <code>{pool_id}</code>
 
 <b> ℹ️ Pool info</b>
-    rank: <code>#️{pool_rank} (random)</code>
+    rank: <code>#️{pool_rank}</code>
     pledge: <code>{pledge} ₳</code>
     cost: <code>{cost} ₳</code>
     margin: <code>{margin_perc}%</code>
@@ -37,7 +37,7 @@ _poolinfo_reply_PT = """
 <code>{pool_id}</code>
 
 <b>ℹ️ Informações</b>
-    rank: <code>#️{pool_rank} (aleatório)</code>
+    rank: <code>#️{pool_rank}</code>
     pledge: <code>{pledge} ₳</code>
     custo: <code>{cost} ₳</code>
     margem: <code>{margin_perc}%</code>
@@ -67,7 +67,7 @@ _poolinfo_reply_KR = """
 <code>{pool_id}</code>
 
 <b>ℹ️ 풀 정보</b>
-    순위: <code>#️{pool_rank} (랜덤)</code>
+    순위: <code>#️{pool_rank}</code>
     담보량: <code>{pledge} ₳</code>
     풀고정수수료: <code>{cost} ₳</code>
     풀운영수수료: <code>{margin_perc}%</code>
@@ -97,7 +97,7 @@ _poolinfo_reply_JP = """
 <code>{pool_id}</code>
 
 <b>ℹ️ プール情報</b>
-    順位: <code>#️{pool_rank} (無作為)</code>
+    順位: <code>#️{pool_rank}</code>
     担保量: <code>{pledge} ₳</code>
     プール固定手数料: <code>{cost} ₳</code>
     プール運営手数料: <code>{margin_perc}%</code>
@@ -195,6 +195,31 @@ change_lang_reply = {
     'PT': _change_lang_reply_PT,
     'KR': _change_lang_reply_KR,
     'JP': _change_lang_reply_JP}
+
+
+###############################################################################
+
+_change_default_pool_reply_EN = """
+✅ Your default pool was modified successfully!
+"""
+
+_change_default_pool_reply_PT = """
+✅ Sua pool padrão foi alterada com sucesso!
+"""
+
+_change_default_pool_reply_KR = """
+✅ 기본 풀 변경에 성공했습니다!
+"""
+
+_change_default_pool_reply_JP = """
+✅ デフォルトプールが変更されました!
+"""
+
+change_default_pool_reply = {
+    'EN': _change_default_pool_reply_EN,
+    'PT': _change_default_pool_reply_PT,
+    'KR': _change_default_pool_reply_KR,
+    'JP': _change_default_pool_reply_JP}
 
 ###############################################################################
 
