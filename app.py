@@ -360,7 +360,8 @@ def poolinfo_callback(update, context):
 
         if 'metadata' in pool and pool['metadata']['ticker'].upper() == typed_ticker.upper():
             #print(ind,pool)
-            update.message.reply_html(pool)
+
+            #update.message.reply_html(pool)
 
             # Wallet data
             gotpool = True
@@ -381,7 +382,6 @@ def poolinfo_callback(update, context):
             rel_stake_perc = pool['metrics']['relative_stake']['quantity']
             blocks = pool['metrics']['produced_blocks']['quantity']
             rewards = pool['metrics']['non_myopic_member_rewards']['quantity']
-
 
             try:
                 # ledger-state data
@@ -438,12 +438,12 @@ def poolinfo_callback(update, context):
                     expected_blocks=expected_blocks,
                     blocks=blocks,
                     block_produced_symbol=get_block_symbol(blocks),
-                    rewards=lovelace_to_ada(rewards),
                     live_stake=lovelace_to_ada(pool_live_stake),
                     n_live_delegators=pool_n_live_delegators,
                     active_stake=lovelace_to_ada(pool_active_stake),
                     n_active_delegators=pool_n_active_delegators,
                     updated_time_ago=beauty_time(updated_time_ago,language)))
+                    #rewards=lovelace_to_ada(rewards),
             break
 
     if not gotpool:

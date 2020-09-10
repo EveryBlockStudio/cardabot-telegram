@@ -20,13 +20,13 @@ _poolinfo_reply_EN = """
     live stake: <code>{live_stake} ₳</code>
       ↳ delegators: <code>{n_live_delegators}</code>
 
-<b>🎲 Blocks this /epoch</b>
-    expected blocks: <code>~{expected_blocks:.1f}</code>
-    produced blocks: <code>{blocks}{block_produced_symbol}</code>
-    rewards: <code>{rewards} ₳</code>
+<b>🎲 Blocks</b>
+    expected blocks (this /epoch): <code>~{expected_blocks:.1f}</code>
+    lifetime blocks: <code>{blocks}{block_produced_symbol}</code>
 
 <i>Live metrics updated {updated_time_ago} ago.</i>
 """
+#    rewards: <code>{rewards} ₳</code>
 
 _poolinfo_reply_PT = """
 <b><code>{ticker}</code> {pool_name}</b>
@@ -50,13 +50,13 @@ _poolinfo_reply_PT = """
     stake atual: <code>{live_stake} ₳</code>
       ↳ delegadores: <code>{n_live_delegators}</code>
 
-<b>🎲 Blocos nesta época (/epoch)</b>
-    blocos esperados: <code>~{expected_blocks:.1f}</code>
-    blocos produzidos: <code>{blocks}{block_produced_symbol}</code>
-    recompensas: <code>{rewards} ₳</code>
+<b>🎲 Blocos</b>
+    blocos esperados (nesta época): <code>~{expected_blocks:.1f}</code>
+    total blocos produzidos: <code>{blocks}{block_produced_symbol}</code>
 
 <i>Métricas atualizadas {updated_time_ago} atrás.</i>
 """
+#recompensas por ADA delegada: <code>{rewards} ₳</code>
 
 _poolinfo_reply_KR = """
 <b><code>{ticker}</code> {pool_name}</b>
@@ -80,13 +80,15 @@ _poolinfo_reply_KR = """
     현재 위임량: <code>{live_stake} ₳</code>
       ↳ 위임자수: <code>{n_live_delegators}</code>
 
-<b>🎲 해당 에포크 블록</b>
-    예측 블록수: <code>~{expected_blocks:.1f}</code>
-    생성 블록수: <code>{blocks}{block_produced_symbol}</code>
-    보상: <code>{rewards} ₳</code>
+<b>🎲 블록</b>
+    예측 블록수 (해당 에포크): <code>~{expected_blocks:.1f}</code>
+    총 생성 블록수: <code>{blocks}{block_produced_symbol}</code>
+
 
 <i>실시간 메트릭스 업데이트 {updated_time_ago} 전</i>
 """
+#    보상: <code>{rewards} ₳</code>
+
 
 _poolinfo_reply_JP = """
 <b><code>{ticker}</code> {pool_name}</b>
@@ -110,13 +112,13 @@ _poolinfo_reply_JP = """
     現在委任量: <code>{live_stake} ₳</code>
       ↳ 委任者数: <code>{n_live_delegators}</code>
 
-<b>🎲 当該エポクのブロック</b>
-    予測ブロック数: <code>~{expected_blocks:.1f}</code>
-    生成ブロック数: <code>{blocks}{block_produced_symbol}</code>
-    報酬: <code>{rewards} ₳</code>
+<b>🎲 ブロック</b>
+    予測ブロック数 (当該エポクの): <code>~{expected_blocks:.1f}</code>
+    生成ブロックの総数: <code>{blocks}{block_produced_symbol}</code>
 
 <i>ライブメトリックスアップデート{updated_time_ago} 前</i>
 """
+#    報酬: <code>{rewards} ₳</code>
 
 poolinfo_reply = {
     'EN': _poolinfo_reply_EN,
