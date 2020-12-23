@@ -440,7 +440,7 @@ def poolinfo_callback(update, context):
             saturat = calc_pool_saturation(
                 pool_live_stake,
                 circulating_supply,
-                nOpt=150)
+                nOpt=500)
 
 
             update.message.reply_html(
