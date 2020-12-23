@@ -9,8 +9,15 @@ from datetime import datetime
 import json
 import glob
 import os
+import subprocess
 
 from mwt import MWT
+
+def bech32_to_hex(pool_bech32):
+    cwd = os.getcwd()
+    cmd = "{}/bin/bech32 <<< {}".format(cwd, pool_bech32)
+    process = subprocess.run(cmd, shell=True, executable='/bin/bash', capture_output=True)
+    return process.stdout.strip().decode()
 
 def calc_pool_saturation(pool_stake, circ_supply, nOpt):
     sat_point = circ_supply/nOpt
@@ -374,7 +381,9 @@ def poolinfo_callback(update, context):
             pool_ticker = pool['metadata']['ticker']
             desc = pool['metadata']['description']
 
-            pool_id = pool['id']
+            pool_id_bech32 = pool['id']
+            pool_id = bech32_to_hex(pool_id_bech32)
+
             site = pool['metadata']['homepage']
             rank = ind + 1
             pledge = pool['pledge']['quantity']
