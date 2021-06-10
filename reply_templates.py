@@ -226,7 +226,7 @@ change_default_pool_reply = {
 ###############################################################################
 
 _welcome_reply_EN = """
-Hello! I'm <b>CardaBot</b> 🤖, a Cardano information bot developed by <b>EveryBlock Studio</b> (ticker: <code>EBS</code>) in collaboration with <b>@BradaPool</b> (ticker: <code>BRADA</code>).
+Hello! I'm <b>CardaBot</b> 🤖, a Cardano information bot developed by <b>EveryBlock Studio</b> (ticker: <code>EBS</code>).
 
 These are the commands I understand for now:
 
@@ -239,7 +239,7 @@ These are the commands I understand for now:
 """
 
 _welcome_reply_PT = """
-Olá! Sou o <b>CardaBot</b> 🤖, um bot de informações da rede Cardano desenvolvido pela <b>EveryBlock Studio</b> (ticker: <code>EBS</code>) em colaboração com a <b>@BradaPool</b> (ticker: <code>BRADA</code>).
+Olá! Sou o <b>CardaBot</b> 🤖, um bot de informações da rede Cardano desenvolvido pela <b>EveryBlock Studio</b> (ticker: <code>EBS</code>).
 
 Esses são os comandos que eu entendo por enquanto:
 
@@ -252,7 +252,7 @@ Esses são os comandos que eu entendo por enquanto:
 """
 
 _welcome_reply_KR = """
-안녕하세요 저는  <b>CardaBot</b> 🤖입니다.  저는 <b>EveryBlock Studio</b> (ticker: <code>EBS</code>) 와 @BradaPool (ticker: <code>BRADA</code>) 의 협업으로 개발된 카르다노 정보 봇입니다.
+안녕하세요 저는  <b>CardaBot</b> 🤖입니다.  저는 <b>EveryBlock Studio</b> (ticker: <code>EBS</code>) 개발된 카르다노 정보 봇입니다.
 
 아래의 명령어를 입력하실 수 있습니다.
 
@@ -265,7 +265,7 @@ _welcome_reply_KR = """
 """
 
 _welcome_reply_JP = """
-こんにちは! 私は <b>CardaBot</b> 🤖です。 私は @BradaPool (ticker: <code>EBS</code>) との協同により<b>EveryBlock Studio</b> (ticker: <code>EBS</code>)が開発したカルダノ情報ボットです。
+こんにちは! 私は <b>CardaBot</b> 🤖です。 私は <b>EveryBlock Studio</b> (ticker: <code>EBS</code>)が開発したカルダノ情報ボットです。
 
 現在、以下のコマンドが入力できます:
 
@@ -342,80 +342,44 @@ _epoch_reply_EN = """
 🔄 <b>Epoch progress</b>
 <code>{progress_bar} {perc:.1f}%</code>
     current epoch: <code>{current_epoch}</code>
-    slots: <code>{current_slot}/432000</code>
-    decentralization: <code>{decentralization}%</code>
+    blocks: <code>{current_block}/21600</code>
     remaining time: <code>{remaining_time}</code>
 
 💰 <b>Stake info</b>
-    active stake: <code>{active_stake} ₳ ({active_perc_supply:.1f}%)</code>
-    live stake: <code>{live_stake} ₳ ({live_perc_supply:.1f}%)</code>
-
-🏦 <b>Funds</b>
-    circulating supply: <code>{circulating_supply} ₳</code>
-    in reserves: <code>{reserves} ₳</code>
-    in treasury: <code>{treasury} ₳</code>
-
-<i>Live metrics updated {updated_time_ago} ago.</i>
+    active stake: <code>{active_stake} ₳</code>
 """
 
 _epoch_reply_PT = """
 🔄 <b>Progresso da época</b>
 <code>{progress_bar} {perc:.1f}%</code>
     época atual: <code>{current_epoch}</code>
-    slots: <code>{current_slot}/432000</code>
-    descentralização: <code>{decentralization}%</code>
+    blocos: <code>{current_block}/21600</code>
     tempo restante: <code>{remaining_time}</code>
 
 💰 <b>Informação do stake</b>
-    stake ativo: <code>{active_stake} ₳ ({active_perc_supply:.1f}%)</code>
-    stake atual: <code>{live_stake} ₳ ({live_perc_supply:.1f}%)</code>
-
-🏦 <b>Fundos</b>
-    em circulação: <code>{circulating_supply} ₳</code>
-    nas reservas: <code>{reserves} ₳</code>
-    no tesouro: <code>{treasury} ₳</code>
-
-<i>Métricas atualizadas {updated_time_ago} atrás.</i>
+    stake ativo: <code>{active_stake} ₳</code>
 """
 
 _epoch_reply_KR = """
 🔄 <b>에포크 진행 상황</b>
 <code>{progress_bar} {perc:.1f}%</code>
     현재 에포크: <code>{current_epoch}</code>
-    슬롯: <code>{current_slot}/432000</code>
-    분산지수: <code>{decentralization}%</code>
+    블록수: <code>{current_block}/21600</code>
     에포크 남은 시간: <code>{remaining_time}</code>
 
 💰 <b>위임 정보</b>
-    활성 위임량: <code>{active_stake} ₳ ({active_perc_supply:.1f}%)</code>
-    현재 위임량: <code>{live_stake} ₳ ({live_perc_supply:.1f}%)</code>
-
-🏦 <b>자금</b>
-    유통량: <code>{circulating_supply} ₳</code>
-    준비금: <code>{reserves} ₳</code>
-    재무금고: <code>{treasury} ₳</code>
-
-<i>실시간 메트릭스 업데이트 {updated_time_ago} 전</i>
+    활성 위임량: <code>{active_stake} ₳</code>
 """
 
 _epoch_reply_JP = """
 🔄 <b>エポク状況</b>
 <code>{progress_bar} {perc:.1f}%</code>
     現在のエポク: <code>{current_epoch}</code>
-    スロット: <code>{current_slot}/432000</code>
-    分散化指数: <code>{decentralization}%</code>
+    ブロック数: <code>{current_block}/21600</code>
     エポク残り時間: <code>{remaining_time}</code>
 
 💰 <b>委任量情報</b>
-    活性委任量: <code>{active_stake} ₳ ({active_perc_supply:.1f}%)</code>
-    現在委任量: <code>{live_stake} ₳ ({live_perc_supply:.1f}%)</code>
-
-🏦 <b>資金</b>
-    循環供給量: <code>{circulating_supply} ₳</code>
-    準備金: <code>{reserves} ₳</code>
-    財務金庫: <code>{treasury} ₳</code>
-
-<i>ライブメトリックスアップデート{updated_time_ago} 前</i>
+    活性委任量: <code>{active_stake} ₳</code>
 """
 
 epoch_reply = {

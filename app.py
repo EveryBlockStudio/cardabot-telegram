@@ -1,16 +1,16 @@
-from credentials import bot_token, wallet_url
 from reply_templates import *
 from telegram.ext import Updater, CommandHandler
 from telegram import Bot
 import logging
 import requests
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import glob
 import os
 import subprocess
-
+import pymongo
+from dotenv import load_dotenv
 from mwt import MWT
 
 def bech32_to_hex(pool_bech32):
@@ -39,6 +39,7 @@ def get_block_symbol(produced_blocks):
 def get_last_file(pathtofile):
     return max(
         glob.glob(f"{pathtofile}/*.json"), key=os.path.getmtime)
+        
 
 def get_saturat_symbol(saturat):
     saturat = float(saturat)
@@ -48,50 +49,50 @@ def get_saturat_symbol(saturat):
         return '🟡'
     else:
         return '🔴'
-
-def get_chat_filename(chat_id_int):
-    cwd = os.getcwd()
-    chat_id = str(chat_id_int)
-    return cwd + '/chats/' + chat_id + '.json'
-
+        
 
 def get_chat_obj(chat_id_int):
-    chat_filename = get_chat_filename(chat_id_int)
 
     # Create a new chat file if it doesn't exist
-    if not os.path.exists(chat_filename):
-        with open(chat_filename, 'w') as f:
-            json_obj = {}
-            json_obj['chat_id'] = chat_id_int
-            json_obj['language'] = 'EN'
-            json_obj['default_pool'] = 'EBS'
+    res = telegram_acc.find_one({"chat_id": chat_id_int})
 
-            json.dump(json_obj, f)
+    if not res: #if the db response is empty
+        json_obj = {}
+        json_obj['chat_id'] = chat_id_int
+        json_obj['language'] = 'EN'
+        json_obj['default_pool'] = 'EBS'
+
+        telegram_acc.insert_one(json_obj)
 
     # If the chat file already exist, just open it to return the object
     else:
-        with open(chat_filename, 'r') as f:
-            json_obj = json.load(f)
+        json_obj = res
 
     return json_obj
-
-def set_chat_obj(chat_obj):
-    chat_filename = get_chat_filename(chat_obj['chat_id'])
-
-    with open(chat_filename, 'w') as f:
-        json.dump(chat_obj, f)
+    
 
 def set_language(chat_id_int, lang):
+    # first ensure that the user has an entry in db
     chat = get_chat_obj(chat_id_int)
-    chat['language'] = lang
+    
+    # build the query and the new value
+    query = { "chat_id": chat_id_int }
+    newvalue = { "$set": { "language": lang} }
 
-    set_chat_obj(chat)
+    # update the entry
+    telegram_acc.update_one(query, newvalue)
+
 
 def set_default_pool(chat_id_int, pool):
+    # first ensure that the user has an entry in db
     chat = get_chat_obj(chat_id_int)
-    chat['default_pool'] = pool
+    
+    # build the query and the new value
+    query = { "chat_id": chat_id_int }
+    newvalue = { "$set": { "default_pool": pool} }
 
-    set_chat_obj(chat)
+    # update the entry
+    telegram_acc.update_one(query, newvalue)
 
 
 def get_progress_bar(perc):
@@ -265,83 +266,45 @@ def epochinfo_callback(update, context):
     chat = get_chat_obj(update.effective_chat.id)
     language = chat['language']
 
-    total_slot = 432000
+    total_blocks = 21600
     total_supply = 45000000000000000
+   
+    target = '/epochs/latest'
 
-    target = '/network/information'
-    target_params = '/network/parameters'
+    r = requests.get(BLOCKFROST_URL+target, headers=blockfrost_header)
 
-    r = requests.get(url+target)
-
-    r_params = requests.get(url+target_params)
-
-    if r.status_code == 200 and r_params.status_code == 200:
+    if r.status_code == 200:
 
         json_data_netinfo = r.json()
-        json_data_params = r_params.json()
-
-
-        decentralisation_level = json_data_params['decentralization_level']['quantity']
-        #print(decentralisation_level.keys())
-
 
         # parse json
-        current_epoch = json_data_netinfo['network_tip']['epoch_number']
-        current_slot = json_data_netinfo['network_tip']['slot_number']
-        next_epoch_time_str = json_data_netinfo['next_epoch']['epoch_start_time']
+        current_epoch = int(json_data_netinfo['epoch'])
+        current_block = int(json_data_netinfo['block_count'])
+        next_epoch_time = int(json_data_netinfo['end_time'])
 
         # get current time
-        current_time =  datetime.utcnow()
-        next_epoch_time = datetime.strptime(next_epoch_time_str, "%Y-%m-%dT%H:%M:%SZ")
+        current_time =  int(datetime.utcnow().timestamp())
+        
         # calc diff time
-        remaining_time = next_epoch_time - current_time
+        remaining_time_int = next_epoch_time - current_time
+        remaining_time = timedelta(seconds=remaining_time_int)
 
         # get perc bar and number
-        perc = (current_slot / total_slot) * 100
+        perc = (current_block / total_blocks) * 100
         progress_bar = get_progress_bar(perc)
 
 
-        # get information from db files
-        cwd = os.getcwd()
-        db_filename = get_last_file(cwd+'/db')
-        with open(db_filename, 'r') as f:
-            json_data_db = json.load(f)
-        d_param = json_data_db['esPp']['decentralisationParam']
-        reserves = json_data_db['esAccountState']['_reserves']
-        treasury = json_data_db['esAccountState']['_treasury']
-        total_live_stake = json_data_db['total_live_stake']
-        total_active_stake = json_data_db['total_active_stake']
-        circulating_supply =  total_supply - (reserves + treasury)
-
-        perc_live_stake_circulating_supply = (total_live_stake / circulating_supply) * 100
-        perc_active_stake_circulating_supply = (total_active_stake / circulating_supply) * 100
-
-        # get current time
-        current_time =  datetime.utcnow()
-        last_update_time = datetime.strptime(
-            json_data_db['timestamp'],
-            "%Y-%m-%dT%H-%M-%S")
-        # calc diff time of last update
-        updated_time_ago = current_time - last_update_time
-
-
+        total_active_stake = int(json_data_netinfo['active_stake'])
+        
         update.message.reply_html(
             epoch_reply[language].format(
                 progress_bar=progress_bar,
                 perc=perc,
                 current_epoch=current_epoch,
-                current_slot=current_slot,
+                current_block=current_block,
                 remaining_time=beauty_time(remaining_time, language),
-                decentralization=decentralisation_level,
-                reserves=lovelace_to_ada(reserves),
-                treasury=lovelace_to_ada(treasury),
-                live_stake=lovelace_to_ada(total_live_stake),
                 active_stake=lovelace_to_ada(total_active_stake),
-                updated_time_ago=beauty_time(updated_time_ago, language),
-                live_perc_supply=perc_live_stake_circulating_supply,
-                active_perc_supply=perc_active_stake_circulating_supply,
-                circulating_supply=lovelace_to_ada(circulating_supply)))
-               #d_param=(1-float(d_param))*100,
+                ))
 
     else:
         context.bot.send_message(
@@ -352,11 +315,14 @@ def epochinfo_callback(update, context):
 def poolinfo_callback(update, context):
     chat = get_chat_obj(update.effective_chat.id)
     language = chat['language']
-
+    
+    update.message.reply_html('''Temporarily disabled, sorry 😞''')
+    return ''
+    
     update.message.reply_html(poolinfo_reply_wait[language])
 
     target = '/stake-pools?stake=1000000'
-    r = requests.get(url+target)
+    r = requests.get(BLOCKFROST_URL+target)
 
     json_data = r.json()
 
@@ -490,23 +456,28 @@ if __name__ == '__main__':
     # Global language definitions
     global supported_languages
 
+    load_dotenv(override=True)
+    BOT_TOKEN = os.environ.get("BOT_TOKEN")
+    BLOCKFROST_URL = os.environ.get("BLOCKFROST_URL")
+    PROJECT_ID = os.environ.get("PROJECT_ID")
+    CONN_STR = os.environ.get("CONN_STR")
 
-    # Set URL default value
-    url = wallet_url
+
+    # Set header for blockfrost calls
+    blockfrost_header = {'project_id': PROJECT_ID}
+    
 
     # Define languages
     supported_languages = ['EN', 'PT', 'KR', 'JP']
 
-
-    # Create cardabot persistence locally (DictPersistence)
-    #cardabot_persistence = PicklePersistence()
-
-
+    # Set a with mongodb
+    client = pymongo.MongoClient(CONN_STR)
+    db = client.cardabotDatabase
+    telegram_acc = db.account
 
     # set telegram object
     updater = Updater(
-        bot_token,
-        #persistence=cardabot_persistence,
+        BOT_TOKEN,
         use_context=True)
     dispatcher = updater.dispatcher
 

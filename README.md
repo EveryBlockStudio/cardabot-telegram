@@ -15,4 +15,3 @@ source cardabot-env/bin/activate
 pip install requests
 pip install python-telegram-bot
 ```
-
