@@ -461,6 +461,8 @@ if __name__ == '__main__':
     BLOCKFROST_URL = os.environ.get("BLOCKFROST_URL")
     PROJECT_ID = os.environ.get("PROJECT_ID")
     CONN_STR = os.environ.get("CONN_STR")
+    PORT = int(os.environ.get("PORT"))
+    APP_DOMAIN = os.environ.get("APP_DOMAIN")
 
 
     # Set header for blockfrost calls
@@ -518,7 +520,13 @@ if __name__ == '__main__':
     dispatcher.add_handler(help_handler)
 
 
-    updater.start_polling()
+    #updater.start_polling()
+
+    # Start the Bot with webhook
+    updater.start_webhook(listen="0.0.0.0",
+                          port=int(PORT),
+                          url_path=BOT_TOKEN)
+    updater.bot.setWebhook(APP_DOMAIN + BOT_TOKEN)
 
 
 

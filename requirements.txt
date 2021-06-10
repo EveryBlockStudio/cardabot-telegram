@@ -4,6 +4,7 @@ chardet>=3.0.4
 cryptography==3.4.7
 decorator==4.4.2
 dnspython==2.1.0
+gunicorn==20.1.0
 idna==2.10
 pycparser==2.20
 pymongo==3.11.4
