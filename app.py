@@ -1,6 +1,6 @@
 from reply_templates import *
 from telegram.ext import Updater, CommandHandler
-from telegram import Bot
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 import logging
 import requests
 import random
@@ -12,6 +12,7 @@ import subprocess
 import pymongo
 from dotenv import load_dotenv
 from mwt import MWT
+import time
 
 def bech32_to_hex(pool_bech32):
     cwd = os.getcwd()
@@ -311,12 +312,56 @@ def epochinfo_callback(update, context):
             chat_id=update.effective_chat.id,
             text="Sorry, no response from server :(")
 
+def ebs_callback(update, context):
+    chat = get_chat_obj(update.effective_chat.id)
+    language = chat['language']
 
+
+    update.message.reply_text(
+        'Subscribe to us on Twitter and Instagram:',
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton(text='on Twitter', url='https://twitter.com/EveryBlockStd')],
+            [InlineKeyboardButton(text='on Instagram', url='https://instagram.com/EveryBlockStudio')],
+        ])
+        )
+        
+    
+    
+
+    return ''
+    
+    
+def tip_callback(update, context):
+    chat = get_chat_obj(update.effective_chat.id)
+    chat_id = update.effective_chat.id
+    language = chat['language']
+
+    message = context.bot.send_message(chat_id=chat_id, text='Click the button below to sign your transaction using Nami wallet: ⬇️',
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton(text='🔑 Sign Tx', url='https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1')],
+            [InlineKeyboardButton(text='📖 Learn more', url='https://instagram.com/EveryBlockStudio')],
+        ])
+        )
+
+
+    time.sleep(10)
+    
+    message.edit_text(
+        text='✅ Your transaction was submitted!', 
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton(text='Check Tx on CardanoScan', url='https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d')],
+            ])
+        )
+
+    return ''
+    
 def poolinfo_callback(update, context):
     chat = get_chat_obj(update.effective_chat.id)
     language = chat['language']
     
     update.message.reply_html('''Temporarily disabled, sorry 😞''')
+        
+    
     return ''
     
     update.message.reply_html(poolinfo_reply_wait[language])
@@ -518,6 +563,14 @@ if __name__ == '__main__':
     # help handler
     help_handler = CommandHandler('help', help_callback)
     dispatcher.add_handler(help_handler)
+    
+    # ebs handler
+    ebs_handler = CommandHandler('ebs', ebs_callback)
+    dispatcher.add_handler(ebs_handler)
+    
+    # tip handler
+    tip_handler = CommandHandler('tip', tip_callback)
+    dispatcher.add_handler(tip_handler)
 
 
     #updater.start_polling()
