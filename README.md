@@ -1,4 +1,4 @@
-# CardaBot | A Cardano Telegram bot by EveryBlock Studio
+# CardaBot | A Cardano Telegram bot by [EveryBlock Studio](https://everyblock.studio/)
 
 ## Installing
 
