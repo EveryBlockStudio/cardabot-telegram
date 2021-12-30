@@ -2,16 +2,15 @@
 
 ## Installing
 
-### Set and activate a new env python
+Set and activate a new env python:
 
 ```
 python -m venv cardabot-env/
 source cardabot-env/bin/activate
 ```
 
-### Install prereqs
+Install deps:
 
 ```
-pip install requests
-pip install python-telegram-bot
+python -m pip install -r requirements.txt
 ```
