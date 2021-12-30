@@ -56,7 +56,7 @@ _poolinfo_reply_PT = """
 
 <i>Métricas atualizadas {updated_time_ago} atrás.</i>
 """
-#recompensas por ADA delegada: <code>{rewards} ₳</code>
+# recompensas por ADA delegada: <code>{rewards} ₳</code>
 
 _poolinfo_reply_KR = """
 <b><code>{ticker}</code> {pool_name}</b>
@@ -121,10 +121,11 @@ _poolinfo_reply_JP = """
 #    報酬: <code>{rewards} ₳</code>
 
 poolinfo_reply = {
-    'EN': _poolinfo_reply_EN,
-    'PT': _poolinfo_reply_PT,
-    'KR': _poolinfo_reply_KR,
-    'JP': _poolinfo_reply_JP}
+    "EN": _poolinfo_reply_EN,
+    "PT": _poolinfo_reply_PT,
+    "KR": _poolinfo_reply_KR,
+    "JP": _poolinfo_reply_JP,
+}
 
 ###############################################################################
 
@@ -145,10 +146,11 @@ _poolinfo_reply_error_JP = """
 """
 
 poolinfo_reply_error = {
-    'EN': _poolinfo_reply_error_EN,
-    'PT': _poolinfo_reply_error_PT,
-    'KR': _poolinfo_reply_error_KR,
-    'JP': _poolinfo_reply_error_JP}
+    "EN": _poolinfo_reply_error_EN,
+    "PT": _poolinfo_reply_error_PT,
+    "KR": _poolinfo_reply_error_KR,
+    "JP": _poolinfo_reply_error_JP,
+}
 
 ###############################################################################
 
@@ -169,10 +171,11 @@ _poolinfo_reply_wait_JP = """
 """
 
 poolinfo_reply_wait = {
-    'EN': _poolinfo_reply_wait_EN,
-    'PT': _poolinfo_reply_wait_PT,
-    'KR': _poolinfo_reply_wait_KR,
-    'JP': _poolinfo_reply_wait_JP}
+    "EN": _poolinfo_reply_wait_EN,
+    "PT": _poolinfo_reply_wait_PT,
+    "KR": _poolinfo_reply_wait_KR,
+    "JP": _poolinfo_reply_wait_JP,
+}
 
 ###############################################################################
 
@@ -193,10 +196,11 @@ _change_lang_reply_JP = """
 """
 
 change_lang_reply = {
-    'EN': _change_lang_reply_EN,
-    'PT': _change_lang_reply_PT,
-    'KR': _change_lang_reply_KR,
-    'JP': _change_lang_reply_JP}
+    "EN": _change_lang_reply_EN,
+    "PT": _change_lang_reply_PT,
+    "KR": _change_lang_reply_KR,
+    "JP": _change_lang_reply_JP,
+}
 
 
 ###############################################################################
@@ -218,10 +222,11 @@ _change_default_pool_reply_JP = """
 """
 
 change_default_pool_reply = {
-    'EN': _change_default_pool_reply_EN,
-    'PT': _change_default_pool_reply_PT,
-    'KR': _change_default_pool_reply_KR,
-    'JP': _change_default_pool_reply_JP}
+    "EN": _change_default_pool_reply_EN,
+    "PT": _change_default_pool_reply_PT,
+    "KR": _change_default_pool_reply_KR,
+    "JP": _change_default_pool_reply_JP,
+}
 
 ###############################################################################
 
@@ -278,10 +283,11 @@ _welcome_reply_JP = """
 """
 
 welcome_reply = {
-    'EN': _welcome_reply_EN,
-    'PT': _welcome_reply_PT,
-    'KR': _welcome_reply_KR,
-    'JP': _welcome_reply_JP}
+    "EN": _welcome_reply_EN,
+    "PT": _welcome_reply_PT,
+    "KR": _welcome_reply_KR,
+    "JP": _welcome_reply_JP,
+}
 
 ###############################################################################
 
@@ -331,10 +337,11 @@ _help_reply_JP = """
 """
 
 help_reply = {
-    'EN': _help_reply_EN,
-    'PT': _help_reply_PT,
-    'KR': _help_reply_KR,
-    'JP': _help_reply_JP}
+    "EN": _help_reply_EN,
+    "PT": _help_reply_PT,
+    "KR": _help_reply_KR,
+    "JP": _help_reply_JP,
+}
 
 ###############################################################################
 
@@ -383,10 +390,11 @@ _epoch_reply_JP = """
 """
 
 epoch_reply = {
-    'EN': _epoch_reply_EN,
-    'PT': _epoch_reply_PT,
-    'KR': _epoch_reply_KR,
-    'JP': _epoch_reply_JP}
+    "EN": _epoch_reply_EN,
+    "PT": _epoch_reply_PT,
+    "KR": _epoch_reply_KR,
+    "JP": _epoch_reply_JP,
+}
 
 ###############################################################################
 
@@ -396,10 +404,11 @@ _day_text_KR = "일"
 _day_text_JP = "日"
 
 day_text = {
-    'EN': _day_text_EN,
-    'PT': _day_text_PT,
-    'KR': _day_text_KR,
-    'JP': _day_text_JP}
+    "EN": _day_text_EN,
+    "PT": _day_text_PT,
+    "KR": _day_text_KR,
+    "JP": _day_text_JP,
+}
 
 ###############################################################################
 
@@ -409,7 +418,8 @@ _days_text_KR = "일"
 _days_text_JP = "日"
 
 days_text = {
-    'EN': _days_text_EN,
-    'PT': _days_text_PT,
-    'KR': _days_text_KR,
-    'JP': _days_text_JP}
+    "EN": _days_text_EN,
+    "PT": _days_text_PT,
+    "KR": _days_text_KR,
+    "JP": _days_text_JP,
+}
