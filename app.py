@@ -603,9 +603,10 @@ if __name__ == "__main__":
     tip_handler = CommandHandler("tip", tip_callback)
     dispatcher.add_handler(tip_handler)
 
+    # start bot with pooling (use when running local)
     # updater.start_polling()
 
-    # Start the Bot with webhook
+    # Start bot with webhook (use in production)
     updater.start_webhook(listen="0.0.0.0", port=int(PORT), url_path=BOT_TOKEN)
     updater.bot.setWebhook(APP_DOMAIN + BOT_TOKEN)
 
