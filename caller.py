@@ -1,11 +1,11 @@
-from typing import Dict
+from typing import Union
 from dotenv.main import load_dotenv
 from sgqlc.endpoint.http import HTTPEndpoint
 from pathlib import Path
 import os
 
 
-def get_data_from_node(query_name: str, variables={}) -> Dict:
+def get_data_from_node(query_name: str, variables={}) -> Union[dict, None]:
     """Request data from EBS's private cardano graphql endpoint.
 
     Query text is obtained from file `query_name` stored under the `src/queries/` dir.
