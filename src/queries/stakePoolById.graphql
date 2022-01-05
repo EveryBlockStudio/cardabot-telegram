@@ -1,8 +1,0 @@
-query stakePoolById (
-    $id: StakePoolID!
-)  {
-    stakePools (where: { id: { _eq: $id }}) {
-        hash
-        id
-    }
-}
