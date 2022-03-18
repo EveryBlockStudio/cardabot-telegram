@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import os
 import subprocess
 import glob
@@ -142,35 +143,20 @@ def beauty_time(timedelta, language, days_text, day_text):
             )
 
 
-def lovelace_to_ada(value):
-    """Take a value in lovelace and returns in ADA (str)"""
+def lovelace_to_ada(lovelace_value: int):
+    """Take a value in lovelace and return it in ADA."""
+    units = OrderedDict({"T": 1e12, "B": 1e9, "M": 1e6, "K": 1e3})
 
-    # Define units
-    K = 1000
-    M = 1000000
-    B = 1000000000
-    units = {"no": 1, "K": K, "M": M, "B": B}
+    # convert lovelace to ada
+    ada_int = lovelace_value / units.get("M")  # 1 ADA == 1000000 lovelace
 
-    # Calculate ADA from lovelaces
-    ada_int = value // M
+    ada_value, best_unit = ada_int, ""
+    for key in units.keys():
+        if ada_int > units.get(key):
+            ada_value, best_unit = ada_int / units.get(key), key
+            break
 
-    # Select the best unit to show
-    if ada_int / K < 1:
-        best_unit = "no"
-    elif ada_int / M < 1:
-        best_unit = "K"
-    elif ada_int / B < 1:
-        best_unit = "M"
-    else:
-        best_unit = "B"
-
-    # Transform int to str
-    if best_unit == "no":
-        ada_str = "{:.0f}".format(ada_int)
-    else:
-        ada_str = "{:.2f}{}".format(float(ada_int / units[best_unit]), best_unit)
-
-    return ada_str
+    return f"{float(ada_value):.2f}{best_unit}"
 
 
 @cached(cache=TTLCache(maxsize=2048, ttl=3600))
