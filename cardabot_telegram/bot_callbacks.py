@@ -39,7 +39,9 @@ class CardaBotCallbacks:
                 user_lang = " ".join(context.args).upper()
                 if user_lang in reply_templates.supported_languages:
                     language = user_lang
-                    utils.set_language(update.effective_chat.id, language)
+                    utils.set_language(
+                        update.effective_chat.id, language, self.mongodb_account
+                    )
                     update.message.reply_html(
                         reply_templates.change_lang_reply[language]
                     )
@@ -53,7 +55,9 @@ class CardaBotCallbacks:
                         language = random_lang
                         break
 
-                utils.set_language(update.effective_chat.id, language)
+                utils.set_language(
+                    update.effective_chat.id, language, self.mongodb_account
+                )
                 update.message.reply_html(reply_templates.change_lang_reply[language])
 
         else:
@@ -89,7 +93,9 @@ class CardaBotCallbacks:
                         language = random_lang
                         break
 
-                utils.set_language(update.effective_chat.id, language)
+                utils.set_language(
+                    update.effective_chat.id, language, self.mongodb_account
+                )
                 update.message.reply_html(reply_templates.change_lang_reply[language])
 
         else:
@@ -142,7 +148,9 @@ class CardaBotCallbacks:
                         reply_templates.days_text,
                         reply_templates.day_text,
                     ),
-                    active_stake=utils.lovelace_to_ada(total_active_stake),
+                    active_stake=utils.fmt_ada(
+                        utils.lovelace_to_ada(total_active_stake)
+                    ),
                 )
             )
 
@@ -328,8 +336,8 @@ class CardaBotCallbacks:
                         homepage=homepage,
                         desc=desc,
                         pool_rank=rank,
-                        pledge=lovelace_to_ada(pledge),
-                        cost=lovelace_to_ada(cost),
+                        pledge=lovelace_to_ada(pledge),  # update this later
+                        cost=lovelace_to_ada(cost),  # update this later
                         margin_perc=margin_perc,
                         saturat=saturat * 100,
                         saturat_symbol=get_saturat_symbol(saturat),
@@ -337,14 +345,17 @@ class CardaBotCallbacks:
                         expected_blocks=expected_blocks,
                         blocks=blocks,
                         block_produced_symbol=get_block_symbol(blocks),
-                        live_stake=lovelace_to_ada(pool_live_stake),
+                        live_stake=lovelace_to_ada(
+                            pool_live_stake
+                        ),  # update this later
                         n_live_delegators=pool_n_live_delegators,
-                        active_stake=lovelace_to_ada(pool_active_stake),
+                        active_stake=lovelace_to_ada(
+                            pool_active_stake
+                        ),  # update this later
                         n_active_delegators=pool_n_active_delegators,
                         updated_time_ago=beauty_time(updated_time_ago, language),
                     )
                 )
-                # rewards=lovelace_to_ada(rewards),
                 break
 
         if not gotpool:

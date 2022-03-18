@@ -4,6 +4,8 @@ import subprocess
 import glob
 from cachetools import cached, TTLCache
 
+import telegram
+
 
 def bech32_to_hex(pool_bech32):
     cwd = os.getcwd()
@@ -143,24 +145,27 @@ def beauty_time(timedelta, language, days_text, day_text):
             )
 
 
-def lovelace_to_ada(lovelace_value: int):
+def lovelace_to_ada(lovelace_value: int) -> str:
     """Take a value in lovelace and return it in ADA."""
+    constant = 1e6
+    return lovelace_value / constant
+
+
+def fmt_ada(value: int) -> str:
+    """Return string with formatted ADA value."""
     units = OrderedDict({"T": 1e12, "B": 1e9, "M": 1e6, "K": 1e3})
 
-    # convert lovelace to ada
-    ada_int = lovelace_value / units.get("M")  # 1 ADA == 1000000 lovelace
-
-    ada_value, best_unit = ada_int, ""
+    ada_fmt, best_unit = value, ""
     for key in units.keys():
-        if ada_int > units.get(key):
-            ada_value, best_unit = ada_int / units.get(key), key
+        if value > units.get(key):
+            ada_fmt, best_unit = value / units.get(key), key
             break
 
-    return f"{float(ada_value):.2f}{best_unit}"
+    return f"{float(ada_fmt):.2f}{best_unit}"
 
 
 @cached(cache=TTLCache(maxsize=2048, ttl=3600))
-def get_admin_ids(bot, chat_id):
+def get_admin_ids(bot: telegram.ext.ExtBot, chat_id: int) -> list[int]:
     """Return a list of admin IDs for a given chat.
 
     Results are cached for 1 hour.
