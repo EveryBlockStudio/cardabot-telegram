@@ -1,8 +1,7 @@
 import os
 import subprocess
 import glob
-
-from .mwt import MWT
+from cachetools import cached, TTLCache
 
 
 def bech32_to_hex(pool_bech32):
@@ -174,7 +173,11 @@ def lovelace_to_ada(value):
     return ada_str
 
 
-@MWT(timeout=60 * 60)
+@cached(cache=TTLCache(maxsize=2048, ttl=3600))
 def get_admin_ids(bot, chat_id):
-    """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
+    """Return a list of admin IDs for a given chat.
+
+    Results are cached for 1 hour.
+
+    """
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]

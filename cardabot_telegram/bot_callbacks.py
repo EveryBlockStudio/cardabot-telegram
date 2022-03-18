@@ -21,7 +21,7 @@ class CardaBotCallbacks:
         update.message.reply_html(reply_templates.help_reply[language])
 
     def change_lang(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id)
+        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
         language = chat["language"]
 
         is_admin = False
