@@ -5,7 +5,7 @@ import pymongo
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler
 
-from .bot_callbacks import CardaBotCallbacks
+from .callbacks import CardaBotCallbacks
 
 
 if __name__ == "__main__":
