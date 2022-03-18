@@ -423,3 +423,5 @@ days_text = {
     "KR": _days_text_KR,
     "JP": _days_text_JP,
 }
+
+supported_languages = ["EN", "PT", "KR", "JP"]
