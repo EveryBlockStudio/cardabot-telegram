@@ -1,16 +1,22 @@
-# CardaBot | A Cardano Telegram bot by [EveryBlock Studio](https://everyblock.studio/)
+# CardaBot Telegram
+A Cardano Telegram bot [by EveryBlock Studio](https://everyblock.studio/).
 
-## Installing
+## Install
 
-Set and activate a new env python:
+Create and activate a python virtual environment (recommended):
 
 ```
-python -m venv cardabot-env/
-source cardabot-env/bin/activate
+python -m venv env/
+source env/bin/activate
 ```
 
-Install deps:
-
+Install requirements:
 ```
 python -m pip install -r requirements.txt
+```
+
+## Run
+Execute the bot application:
+```
+python -m cardabot_telegram.app
 ```
