@@ -3,6 +3,8 @@ A Cardano Telegram bot [by EveryBlock Studio](https://everyblock.studio/).
 
 ## Install
 
+Python version >=3.9 is required.
+
 Create and activate a python virtual environment (recommended):
 
 ```
