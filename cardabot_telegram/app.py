@@ -1,10 +1,8 @@
 import logging
 import os
-from functools import partial
 
 import pymongo
 from dotenv import load_dotenv
-import telegram
 from telegram.ext import Updater, CommandHandler
 
 from .bot_callbacks import CardaBotCallbacks
