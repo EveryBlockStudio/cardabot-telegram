@@ -72,7 +72,7 @@ def get_chat_obj(chat_id_int, telegram_acc):
 
 def set_language(chat_id_int, lang, telegram_acc):
     # first ensure that the user has an entry in db
-    chat = get_chat_obj(chat_id_int)
+    chat = get_chat_obj(chat_id_int, telegram_acc)
 
     # build the query and the new value
     query = {"chat_id": chat_id_int}
@@ -84,7 +84,7 @@ def set_language(chat_id_int, lang, telegram_acc):
 
 def set_default_pool(chat_id_int, pool, telegram_acc):
     # first ensure that the user has an entry in db
-    chat = get_chat_obj(chat_id_int)
+    chat = get_chat_obj(chat_id_int, telegram_acc)
 
     # build the query and the new value
     query = {"chat_id": chat_id_int}
