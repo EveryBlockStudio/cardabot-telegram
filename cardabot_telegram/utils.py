@@ -3,8 +3,7 @@ import os
 import subprocess
 import glob
 from cachetools import cached, TTLCache
-
-import telegram
+import pymongo
 
 
 def bech32_to_hex(pool_bech32):
@@ -16,8 +15,8 @@ def bech32_to_hex(pool_bech32):
     return process.stdout.strip().decode()
 
 
-def calc_pool_saturation(pool_stake, circ_supply, nOpt):
-    sat_point = circ_supply / nOpt
+def calc_pool_saturation(pool_stake, circ_supply, n_opt):
+    sat_point = circ_supply / n_opt
     return pool_stake / sat_point
 
 
@@ -29,19 +28,18 @@ def calc_expected_blocks(pool_stake, total_stake, d_param):
     return expected_blocks
 
 
-def get_block_symbol(produced_blocks):
+def get_block_symbol(produced_blocks: int) -> str:
     if produced_blocks > 0:
         return " 🎉"
     return ""
 
 
-def get_last_file(pathtofile):
+def get_last_file(pathtofile: str) -> str:
     return max(glob.glob(f"{pathtofile}/*.json"), key=os.path.getmtime)
 
 
-def get_saturation_icon(saturation: float):
+def get_saturation_icon(saturation: float) -> str:
     saturation = float(saturation)
-
     if saturation < 0.75:
         return "🟢"
     elif saturation < 1.0:
@@ -50,51 +48,50 @@ def get_saturation_icon(saturation: float):
     return "🔴"
 
 
-def get_chat_obj(chat_id_int, telegram_acc):
+def get_chat_obj_database(
+    chat_id: int, telegram_acc: pymongo.collection.Collection
+) -> dict:
+    """Returns chat object from database.
 
-    # Create a new chat file if it doesn't exist
-    res = telegram_acc.find_one({"chat_id": chat_id_int})
+    If chat_id is not present, then register new chat with default options.
 
-    if not res:  # if the db response is empty
+    """
+    json_obj = telegram_acc.find_one({"chat_id": chat_id})
+
+    if not json_obj:  # if db response is empty, insert new chat file
         json_obj = {}
-        json_obj["chat_id"] = chat_id_int
+        json_obj["chat_id"] = chat_id
         json_obj["language"] = "EN"
         json_obj["default_pool"] = "EBS"
 
         telegram_acc.insert_one(json_obj)
 
-    # If the chat file already exist, just open it to return the object
-    else:
-        json_obj = res
-
     return json_obj
 
 
-def set_language(chat_id_int, lang, telegram_acc):
-    # first ensure that the user has an entry in db
-    chat = get_chat_obj(chat_id_int, telegram_acc)
+def set_language(chat_id: int, lang: str, telegram_acc: pymongo.collection.Collection):
+    """Set chat default language."""
+    # make sure chat is registered in database, otherwise create one
+    get_chat_obj_database(chat_id, telegram_acc)
+    query = {"chat_id": chat_id}
+    update = {"$set": {"language": lang}}
 
-    # build the query and the new value
-    query = {"chat_id": chat_id_int}
-    newvalue = {"$set": {"language": lang}}
-
-    # update the entry
-    telegram_acc.update_one(query, newvalue)
+    telegram_acc.update_one(query, update)
 
 
-def set_default_pool(chat_id_int, pool, telegram_acc):
-    # first ensure that the user has an entry in db
-    chat = get_chat_obj(chat_id_int, telegram_acc)
+def set_default_pool(
+    chat_id: int, pool: str, telegram_acc: pymongo.collection.Collection
+) -> None:
+    """Set the default pool using pool ticker."""
+    # make sure chat is registered in database, otherwise create one
+    get_chat_obj_database(chat_id, telegram_acc)
+    query = {"chat_id": chat_id}
+    update = {"$set": {"default_pool": pool}}
 
-    # build the query and the new value
-    query = {"chat_id": chat_id_int}
-    newvalue = {"$set": {"default_pool": pool}}
-
-    # update the entry
-    telegram_acc.update_one(query, newvalue)
+    telegram_acc.update_one(query, update)
 
 
-def get_progress_bar(percentage):
+def get_progress_bar(percentage: float) -> str:
     if percentage < 10:
         return "▱▱▱▱▱▱▱▱▱▱"
     elif percentage < 20:

@@ -15,13 +15,17 @@ class CardaBotCallbacks:
         self.blockfrost_headers = blockfrost_headers
 
     def help(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
+        chat = utils.get_chat_obj_database(
+            update.effective_chat.id, self.mongodb_account
+        )
         language = chat["language"]
 
         update.message.reply_html(reply_templates.help_reply[language])
 
     def change_lang(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
+        chat = utils.get_chat_obj_database(
+            update.effective_chat.id, self.mongodb_account
+        )
         language = chat["language"]
 
         is_admin = False
@@ -64,7 +68,9 @@ class CardaBotCallbacks:
             update.message.reply_html(f"You're not authorized to do that 😞")
 
     def change_default_pool(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
+        chat = utils.get_chat_obj_database(
+            update.effective_chat.id, self.mongodb_account
+        )
         language = chat["language"]
 
         is_admin = False
@@ -81,7 +87,9 @@ class CardaBotCallbacks:
             if context.args:
                 user_pool = " ".join(context.args).upper()
 
-                utils.set_default_pool(update.effective_chat.id, user_pool)
+                utils.set_default_pool(
+                    update.effective_chat.id, user_pool, self.mongodb_account
+                )
                 update.message.reply_html(
                     reply_templates.change_default_pool_reply[language]
                 )
@@ -102,7 +110,9 @@ class CardaBotCallbacks:
             update.message.reply_html(f"You're not authorized to do that 😞")
 
     def epochinfo(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
+        chat = utils.get_chat_obj_database(
+            update.effective_chat.id, self.mongodb_account
+        )
         language = chat["language"]
 
         total_blocks = 21600
@@ -161,7 +171,9 @@ class CardaBotCallbacks:
             )
 
     def ebs(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
+        chat = utils.get_chat_obj_database(
+            update.effective_chat.id, self.mongodb_account
+        )
         language = chat["language"]
 
         update.message.reply_text(
@@ -186,7 +198,9 @@ class CardaBotCallbacks:
         return ""
 
     def tip(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
+        chat = utils.get_chat_obj_database(
+            update.effective_chat.id, self.mongodb_account
+        )
         chat_id = update.effective_chat.id
         language = chat["language"]
 
@@ -230,7 +244,9 @@ class CardaBotCallbacks:
         return ""
 
     def poolinfo(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
+        chat = utils.get_chat_obj_database(
+            update.effective_chat.id, self.mongodb_account
+        )
         language = chat["language"]
 
         update.message.reply_html("""Temporarily disabled, sorry 😞""")
@@ -364,7 +380,9 @@ class CardaBotCallbacks:
             )
 
     def start(self, update, context):
-        chat = utils.get_chat_obj(update.effective_chat.id, self.mongodb_account)
+        chat = utils.get_chat_obj_database(
+            update.effective_chat.id, self.mongodb_account
+        )
         language = chat["language"]
 
         update.message.reply_html(reply_templates.welcome_reply[language])
