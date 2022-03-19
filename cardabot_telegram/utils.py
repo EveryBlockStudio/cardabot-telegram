@@ -3,6 +3,7 @@ import os
 import subprocess
 import glob
 from cachetools import cached, TTLCache
+import datetime
 import pymongo
 
 
@@ -115,31 +116,18 @@ def get_progress_bar(percentage: float) -> str:
     return ""
 
 
-def beauty_time(timedelta, language, days_text, day_text):
-    days = timedelta.days
+def fmt_time(timedelta: datetime.timedelta, days_text: str) -> str:
+    """Format a timedelta object to string in multiple languages."""
+    hours, remainder = divmod(timedelta.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
 
-    minute_limit = 60 * 60
-    hour_limit = 60 * 60 * 24
+    minute_limit, hour_limit = (60 * 60), (60 * 60 * 24)
+    if timedelta.days == 0 and timedelta.seconds < minute_limit:
+        return f"{minutes}m"
+    elif timedelta.days == 0 and timedelta.seconds < hour_limit:
+        return f"{hours}h{minutes}m"
 
-    hours_intdiv = ((timedelta.seconds) / 60) // 60
-    remaining_seconds = timedelta.seconds - (hours_intdiv * 60 * 60)
-    remaining_min_intdiv = remaining_seconds // 60
-
-    if days == 0 and timedelta.seconds < minute_limit:
-        return "{}m".format(int(timedelta.seconds // 60))
-
-    elif days == 0 and timedelta.seconds < hour_limit:
-        return "{}h{}m".format(int(hours_intdiv), int(remaining_min_intdiv))
-
-    else:
-        if days > 1:
-            return "{} {}, {}h{}m".format(
-                days, days_text[language], int(hours_intdiv), int(remaining_min_intdiv)
-            )
-        else:
-            return "{} {}, {}h{}m".format(
-                days, day_text[language], int(hours_intdiv), int(remaining_min_intdiv)
-            )
+    return f"{timedelta.days} {days_text}, {hours}h{minutes}m"
 
 
 def lovelace_to_ada(lovelace_value: float) -> float:

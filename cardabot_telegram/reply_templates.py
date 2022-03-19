@@ -398,22 +398,22 @@ epoch_reply = {
 
 ###############################################################################
 
-_day_text_EN = "day"
-_day_text_PT = "dia"
-_day_text_KR = "일"
-_day_text_JP = "日"
+# _day_text_EN = "day"
+# _day_text_PT = "dia"
+# _day_text_KR = "일"
+# _day_text_JP = "日"
 
-day_text = {
-    "EN": _day_text_EN,
-    "PT": _day_text_PT,
-    "KR": _day_text_KR,
-    "JP": _day_text_JP,
-}
+# day_text = {
+#     "EN": _day_text_EN,
+#     "PT": _day_text_PT,
+#     "KR": _day_text_KR,
+#     "JP": _day_text_JP,
+# }
 
 ###############################################################################
 
-_days_text_EN = "days"
-_days_text_PT = "dias"
+_days_text_EN = "day(s)"
+_days_text_PT = "dia(s)"
 _days_text_KR = "일"
 _days_text_JP = "日"
 

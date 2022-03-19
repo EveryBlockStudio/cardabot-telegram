@@ -152,11 +152,10 @@ class CardaBotCallbacks:
                     perc=perc,
                     current_epoch=current_epoch,
                     current_block=current_block,
-                    remaining_time=utils.beauty_time(
+                    remaining_time=utils.fmt_time(
                         remaining_time,
-                        language,
-                        reply_templates.days_text,
-                        reply_templates.day_text,
+                        # language,
+                        reply_templates.days_text[language],
                     ),
                     active_stake=utils.fmt_ada(
                         utils.lovelace_to_ada(total_active_stake)
