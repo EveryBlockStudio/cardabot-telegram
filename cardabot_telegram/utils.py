@@ -145,27 +145,26 @@ def beauty_time(timedelta, language, days_text, day_text):
             )
 
 
-def lovelace_to_ada(lovelace_value: int) -> str:
+def lovelace_to_ada(lovelace_value: float) -> float:
     """Take a value in lovelace and return it in ADA."""
     constant = 1e6
     return lovelace_value / constant
 
 
-def fmt_ada(value: int) -> str:
+def fmt_ada(value: float) -> str:
     """Return string with formatted ADA value."""
     units = OrderedDict({"T": 1e12, "B": 1e9, "M": 1e6, "K": 1e3})
 
-    ada_fmt, best_unit = value, ""
     for key in units.keys():
         if value > units.get(key):
             ada_fmt, best_unit = value / units.get(key), key
-            break
+            return f"{float(ada_fmt):.2f}{best_unit}"
 
-    return f"{float(ada_fmt):.2f}{best_unit}"
+    return f"{float(value):.0f}"
 
 
 @cached(cache=TTLCache(maxsize=2048, ttl=3600))
-def get_admin_ids(bot: telegram.ext.ExtBot, chat_id: int) -> list[int]:
+def get_admin_ids(bot, chat_id: int) -> list[int]:
     """Return a list of admin IDs for a given chat.
 
     Results are cached for 1 hour.
