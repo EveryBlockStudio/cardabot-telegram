@@ -70,7 +70,9 @@ def get_chat_obj_database(
     return json_obj
 
 
-def set_language(chat_id: int, lang: str, telegram_acc: pymongo.collection.Collection):
+def set_user_language(
+    chat_id: int, lang: str, telegram_acc: pymongo.collection.Collection
+):
     """Set chat default language."""
     # make sure chat is registered in database, otherwise create one
     get_chat_obj_database(chat_id, telegram_acc)
@@ -93,6 +95,7 @@ def set_default_pool(
 
 
 def get_progress_bar(percentage: float) -> str:
+    # TODO: refactor to dictionary
     if percentage < 10:
         return "▱▱▱▱▱▱▱▱▱▱"
     elif percentage < 20:
@@ -156,3 +159,10 @@ def get_admin_ids(bot, chat_id: int) -> list[int]:
 
     """
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
+
+
+def user_is_adm(update, context):
+    """Check if user is admin."""
+    return update.effective_user.id in get_admin_ids(
+        context.bot, update.message.chat_id
+    )

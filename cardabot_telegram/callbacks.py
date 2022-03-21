@@ -6,108 +6,129 @@ import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from . import utils
-from . import reply_templates
+from . import replies
+
+# from . import reply_templates
 
 
 class CardaBotCallbacks:
-    def __init__(self, mongodb_account, blockfrost_headers) -> None:
+    def __init__(
+        self,
+        mongodb_account,
+        blockfrost_headers: dict,
+        html_replies: replies.HTMLReplies,
+    ) -> None:
         self.mongodb_account = mongodb_account
         self.blockfrost_headers = blockfrost_headers
+        self.html_replies = html_replies
 
-    def help(self, update, context):
+    def help(self, update, context) -> None:
         chat = utils.get_chat_obj_database(
             update.effective_chat.id, self.mongodb_account
         )
-        language = chat["language"]
 
-        update.message.reply_html(reply_templates.help_reply[language])
+        out = self.html_replies.set_language(chat["language"])
 
-    def change_lang(self, update, context):
-        chat = utils.get_chat_obj_database(
-            update.effective_chat.id, self.mongodb_account
+        update.message.reply_html(
+            self.html_replies.reply(
+                "help.html", supported_languages=self.html_replies.supported_languages
+            )
         )
-        language = chat["language"]
 
-        is_admin = False
+    def change_language(self, update, context) -> None:
+        chat_id = update.effective_chat.id
+        chat = utils.get_chat_obj_database(chat_id, self.mongodb_account)
+        self.html_replies.set_language(chat["language"])
+
         if update.effective_chat.type == "group":
-            if update.effective_user.id in utils.get_admin_ids(
-                context.bot, update.message.chat_id
-            ):
-                is_admin = True
-        else:
-            is_admin = True
-
-        if is_admin:
-            # Extract language ID from message
-            if context.args:
-                user_lang = " ".join(context.args).upper()
-                if user_lang in reply_templates.supported_languages:
-                    language = user_lang
-                    utils.set_language(
-                        update.effective_chat.id, language, self.mongodb_account
-                    )
-                    update.message.reply_html(
-                        reply_templates.change_lang_reply[language]
-                    )
-                else:
-                    update.message.reply_html(f"I don't speak {user_lang} yet 😞")
-
-            else:
-                while True:
-                    random_lang = random.choice(reply_templates.supported_languages)
-                    if random_lang != language:
-                        language = random_lang
-                        break
-
-                utils.set_language(
-                    update.effective_chat.id, language, self.mongodb_account
+            if not utils.user_is_adm(update, context):
+                update.message.reply_html(
+                    self.html_replies.reply("not_authorized.html")
                 )
-                update.message.reply_html(reply_templates.change_lang_reply[language])
+                return
 
+        if not context.args:
+            # TODO: define the expected behaviour when lang is not selected.
+            # Suggestion: set lang to the "default" language (EN).
+            return
+
+        user_lang = "".join(context.args).upper()
+        if self.html_replies.set_language(user_lang):
+            utils.set_user_language(chat_id, user_lang, self.mongodb_account)
+            update.message.reply_html(
+                self.html_replies.reply("change_lang_success.html")
+            )
         else:
-            update.message.reply_html(f"You're not authorized to do that 😞")
+            update.message.reply_html(
+                self.html_replies.reply("change_lang_error.html", user_lang=user_lang)
+            )
 
     def change_default_pool(self, update, context):
-        chat = utils.get_chat_obj_database(
-            update.effective_chat.id, self.mongodb_account
-        )
-        language = chat["language"]
-
-        is_admin = False
         if update.effective_chat.type == "group":
-            if update.effective_user.id in utils.get_admin_ids(
-                context.bot, update.message.chat_id
-            ):
-                is_admin = True
-        else:
-            is_admin = True
-
-        if is_admin:
-            # Extract language ID from message
-            if context.args:
-                user_pool = " ".join(context.args).upper()
-
-                utils.set_default_pool(
-                    update.effective_chat.id, user_pool, self.mongodb_account
-                )
+            if not utils.user_is_adm(update, context):
                 update.message.reply_html(
-                    reply_templates.change_default_pool_reply[language]
+                    self.html_replies.reply("not_authorized.html")
                 )
+                return
 
-            else:
-                while True:
-                    random_lang = random.choice(reply_templates.supported_languages)
-                    if random_lang != language:
-                        language = random_lang
-                        break
+        chat_id = update.effective_chat.id
+        if not context.args:
+            # if there are no args, change default pool to `EBS`
+            default_pool = "EBS"
+            utils.set_default_pool(chat_id, default_pool, self.mongodb_account)
+            update.message.reply_html(
+                # TODO: modify template to pass pool ticker as argument
+                self.html_replies.reply("change_default_pool_success.html")
+            )
+            return
 
-                utils.set_language(
-                    update.effective_chat.id, language, self.mongodb_account
-                )
-                update.message.reply_html(reply_templates.change_lang_reply[language])
+        user_pool = "".join(context.args).upper()
+        utils.set_default_pool(chat_id, user_pool, self.mongodb_account)
+        update.message.reply_html(
+            self.html_replies.reply("change_default_pool_success.html")
+        )
 
-        else:
-            update.message.reply_html(f"You're not authorized to do that 😞")
+    # def change_default_pool(self, update, context):
+    #     chat = utils.get_chat_obj_database(
+    #         update.effective_chat.id, self.mongodb_account
+    #     )
+    #     language = chat["language"]
+
+    #     is_admin = False
+    #     if update.effective_chat.type == "group":
+    #         if update.effective_user.id in utils.get_admin_ids(
+    #             context.bot, update.message.chat_id
+    #         ):
+    #             is_admin = True
+    #     else:
+    #         is_admin = True
+
+    #     if is_admin:
+    #         # Extract language ID from message
+    #         if context.args:
+    #             user_pool = " ".join(context.args).upper()
+
+    #             utils.set_default_pool(
+    #                 update.effective_chat.id, user_pool, self.mongodb_account
+    #             )
+    #             update.message.reply_html(
+    #                 reply_templates.change_default_pool_reply[language]
+    #             )
+
+    #         else:
+    #             while True:
+    #                 random_lang = random.choice(reply_templates.supported_languages)
+    #                 if random_lang != language:
+    #                     language = random_lang
+    #                     break
+
+    #             utils.set_user_language(
+    #                 update.effective_chat.id, language, self.mongodb_account
+    #             )
+    #             update.message.reply_html(reply_templates.change_lang_reply[language])
+
+    #     else:
+    #         update.message.reply_html(f"You're not authorized to do that 😞")
 
     def epochinfo(self, update, context):
         chat = utils.get_chat_obj_database(

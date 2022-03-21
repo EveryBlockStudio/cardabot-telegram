@@ -1,11 +1,11 @@
 import logging
 import os
-
 import pymongo
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler
 
 from .callbacks import CardaBotCallbacks
+from .replies import HTMLReplies
 
 
 if __name__ == "__main__":
@@ -20,18 +20,19 @@ if __name__ == "__main__":
     db = client.cardabotDatabase
     telegram_acc = db.account
 
+    cbs = CardaBotCallbacks(
+        mongodb_account=telegram_acc,
+        blockfrost_headers={"project_id": os.environ.get("PROJECT_ID")},
+        html_replies=HTMLReplies(),
+    )
+
     # telegram bot handlers
     updater = Updater(os.environ.get("BOT_TOKEN"), use_context=True)
     dispatcher = updater.dispatcher
 
-    cbs = CardaBotCallbacks(
-        mongodb_account=telegram_acc,
-        blockfrost_headers={"project_id": os.environ.get("PROJECT_ID")},
-    )
-
     dispatcher.add_handler(CommandHandler("start", cbs.start))
     dispatcher.add_handler(CommandHandler("pool", cbs.poolinfo))
-    dispatcher.add_handler(CommandHandler("language", cbs.change_lang))
+    dispatcher.add_handler(CommandHandler("language", cbs.change_language))
     dispatcher.add_handler(CommandHandler("setpool", cbs.change_default_pool))
     dispatcher.add_handler(CommandHandler("help", cbs.help))
     dispatcher.add_handler(CommandHandler("ebs", cbs.ebs))
