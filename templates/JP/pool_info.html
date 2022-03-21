@@ -1,0 +1,26 @@
+<b><code>{ticker}</code> {pool_name}</b>
+<i>{desc}</i>
+🌐{homepage}
+
+<b>🆔 プール識別子</b>
+<code>{pool_id}</code>
+
+<b>ℹ️ プール情報</b>
+    順位: <code>#️{pool_rank}</code>
+    担保量: <code>{pledge} ₳</code>
+    プール固定手数料: <code>{cost} ₳</code>
+    プール運営手数料: <code>{margin_perc}%</code>
+
+<b>📈 メトリックス</b>
+    飽和度: <code>{saturat:.2f}% {saturat_symbol}</code>
+    現在ステーキング占め率: <code>{rel_stake_perc:.3f}%</code>
+    活性委任量: <code>{active_stake} ₳</code>
+      ↳ 委任者数: <code>{n_active_delegators}</code>
+    現在委任量: <code>{live_stake} ₳</code>
+      ↳ 委任者数: <code>{n_live_delegators}</code>
+
+<b>🎲 ブロック</b>
+    予測ブロック数 (当該エポクの): <code>~{expected_blocks:.1f}</code>
+    生成ブロックの総数: <code>{blocks}{block_produced_symbol}</code>
+
+<i>ライブメトリックスアップデート{updated_time_ago} 前</i>

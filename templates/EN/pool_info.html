@@ -1,0 +1,26 @@
+<b><code>{ticker}</code> {pool_name}</b>
+<i>{desc}</i>
+🌐{homepage}
+
+<b>🆔 Pool ID</b>
+<code>{pool_id}</code>
+
+<b> ℹ️ Pool info</b>
+    rank: <code>#️{pool_rank}</code>
+    pledge: <code>{pledge} ₳</code>
+    cost: <code>{cost} ₳</code>
+    margin: <code>{margin_perc}%</code>
+
+<b>📈 Metrics</b>
+    saturation: <code>{saturat:.2f}% {saturat_symbol}</code>
+    controlled stake: <code>{rel_stake_perc:.3f}%</code>
+    active stake: <code>{active_stake} ₳</code>
+      ↳ delegators: <code>{n_active_delegators}</code>
+    live stake: <code>{live_stake} ₳</code>
+      ↳ delegators: <code>{n_live_delegators}</code>
+
+<b>🎲 Blocks</b>
+    expected blocks (this /epoch): <code>~{expected_blocks:.1f}</code>
+    lifetime blocks: <code>{blocks}{block_produced_symbol}</code>
+
+<i>Live metrics updated {updated_time_ago} ago.</i>
