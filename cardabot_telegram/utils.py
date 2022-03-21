@@ -50,28 +50,21 @@ def get_saturation_icon(saturation: float) -> str:
 
 
 def get_progress_bar(percentage: float) -> str:
-    # TODO: refactor to dictionary
-    if percentage < 10:
-        return "▱▱▱▱▱▱▱▱▱▱"
-    elif percentage < 20:
-        return "▰▱▱▱▱▱▱▱▱▱"
-    elif percentage < 30:
-        return "▰▰▱▱▱▱▱▱▱▱"
-    elif percentage < 40:
-        return "▰▰▰▱▱▱▱▱▱▱"
-    elif percentage < 50:
-        return "▰▰▰▰▱▱▱▱▱▱"
-    elif percentage < 60:
-        return "▰▰▰▰▰▱▱▱▱▱"
-    elif percentage < 70:
-        return "▰▰▰▰▰▰▱▱▱▱"
-    elif percentage < 80:
-        return "▰▰▰▰▰▰▰▱▱▱"
-    elif percentage < 90:
-        return "▰▰▰▰▰▰▰▰▱▱"
-    elif percentage < 100:
-        return "▰▰▰▰▰▰▰▰▰▱"
-    return ""
+    assert percentage >= 0 and percentage <= 100
+    pbar = {
+        10: "[▰▱▱▱▱▱▱▱▱▱]",
+        20: "[▰▰▱▱▱▱▱▱▱▱]",
+        30: "[▰▰▰▱▱▱▱▱▱▱]",
+        40: "[▰▰▰▰▱▱▱▱▱▱]",
+        50: "[▰▰▰▰▰▱▱▱▱▱]",
+        60: "[▰▰▰▰▰▰▱▱▱▱]",
+        70: "[▰▰▰▰▰▰▰▱▱▱]",
+        80: "[▰▰▰▰▰▰▰▰▱▱]",
+        90: "[▰▰▰▰▰▰▰▰▰▱]",
+        100: "[▰▰▰▰▰▰▰▰▰▰]",
+    }
+    tens, _ = divmod(int(percentage), 10)
+    return pbar.get(tens * 10, "[▱▱▱▱▱▱▱▱▱▱]")
 
 
 def fmt_time(timedelta: datetime.timedelta, days_text: str) -> str:
