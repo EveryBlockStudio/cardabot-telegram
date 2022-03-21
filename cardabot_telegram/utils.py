@@ -49,51 +49,6 @@ def get_saturation_icon(saturation: float) -> str:
     return "🔴"
 
 
-def get_chat_obj_database(
-    chat_id: int, telegram_acc: pymongo.collection.Collection
-) -> dict:
-    """Returns chat object from database.
-
-    If chat_id is not present, then register new chat with default options.
-
-    """
-    json_obj = telegram_acc.find_one({"chat_id": chat_id})
-
-    if not json_obj:  # if db response is empty, insert new chat file
-        json_obj = {}
-        json_obj["chat_id"] = chat_id
-        json_obj["language"] = "EN"
-        json_obj["default_pool"] = "EBS"
-
-        telegram_acc.insert_one(json_obj)
-
-    return json_obj
-
-
-def set_user_language(
-    chat_id: int, lang: str, telegram_acc: pymongo.collection.Collection
-):
-    """Set chat default language."""
-    # make sure chat is registered in database, otherwise create one
-    get_chat_obj_database(chat_id, telegram_acc)
-    query = {"chat_id": chat_id}
-    update = {"$set": {"language": lang}}
-
-    telegram_acc.update_one(query, update)
-
-
-def set_default_pool(
-    chat_id: int, pool: str, telegram_acc: pymongo.collection.Collection
-) -> None:
-    """Set the default pool using pool ticker."""
-    # make sure chat is registered in database, otherwise create one
-    get_chat_obj_database(chat_id, telegram_acc)
-    query = {"chat_id": chat_id}
-    update = {"$set": {"default_pool": pool}}
-
-    telegram_acc.update_one(query, update)
-
-
 def get_progress_bar(percentage: float) -> str:
     # TODO: refactor to dictionary
     if percentage < 10:

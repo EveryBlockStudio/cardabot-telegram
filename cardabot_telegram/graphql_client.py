@@ -4,9 +4,7 @@ from sgqlc.endpoint.http import HTTPEndpoint
 
 
 class GraphQLClient:
-    def __init__(
-        self, url: str = os.environ.get("GRAPHQL_URL"), token: str = ""
-    ) -> None:
+    def __init__(self, url: str, token: str = "") -> None:
         self.url = url
         self.token = token
         self.endpoint = HTTPEndpoint(url)

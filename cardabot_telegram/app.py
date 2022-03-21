@@ -1,29 +1,23 @@
 import logging
 import os
-import pymongo
 from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler
 
 from .callbacks import CardaBotCallbacks
 from .replies import HTMLReplies
+from .mongodb import MongoDatabase
 
 
 if __name__ == "__main__":
+    load_dotenv(override=True)
     logging.basicConfig(
         format="%(asctime)s - %(name)s - %(levelname)s %(message)s", level=logging.INFO
     )
 
-    load_dotenv(override=True)
-
-    # mongodb config
-    client = pymongo.MongoClient(os.environ.get("CONN_STR"))
-    db = client.cardabotDatabase
-    telegram_acc = db.account
-
     cbs = CardaBotCallbacks(
-        mongodb_account=telegram_acc,
-        blockfrost_headers={"project_id": os.environ.get("PROJECT_ID")},
+        mongodb=MongoDatabase(os.environ.get("CONN_STR")),
         html_replies=HTMLReplies(),
+        blockfrost_headers={"project_id": os.environ.get("PROJECT_ID")},
     )
 
     # telegram bot handlers

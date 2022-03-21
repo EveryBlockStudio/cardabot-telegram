@@ -1,9 +1,11 @@
+from email.policy import default
 import os
 from datetime import datetime, timedelta
 import time
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+from . import mongodb
 from . import utils
 from . import replies
 
@@ -11,18 +13,18 @@ from . import replies
 class CardaBotCallbacks:
     def __init__(
         self,
-        mongodb_account,
-        blockfrost_headers: dict,
+        mongodb: mongodb.MongoDatabase,
         html_replies: replies.HTMLReplies,
+        blockfrost_headers: dict,
     ) -> None:
-        self.mongodb_account = mongodb_account
+        self.mongodb = mongodb
         self.blockfrost_headers = blockfrost_headers
         self.html_replies = html_replies
 
     def _set_reply_lang(self, chat_id: int):
         """Set HTML template language to current chat language."""
-        chat = utils.get_chat_obj_database(chat_id, self.mongodb_account)
-        self.html_replies.set_language(chat["language"])
+        language = self.mongodb.get_chat_language(chat_id)
+        self.html_replies.set_language(language)
 
     def help(self, update, context) -> None:
         chat_id = update.effective_chat.id
@@ -47,9 +49,10 @@ class CardaBotCallbacks:
 
         if not context.args:
             # set language to default when no args are passed by the user
-            default = self.html_replies.default_lang
-            self.html_replies.set_language(default)
-            utils.set_user_language(chat_id, default, self.mongodb_account)
+            default_language = self.html_replies.default_lang
+            self.html_replies.set_language(default_language)
+            self.mongodb.set_chat_language(chat_id, default_language)
+
             update.message.reply_html(
                 self.html_replies.reply("change_lang_success.html")
             )
@@ -57,7 +60,7 @@ class CardaBotCallbacks:
 
         user_lang = "".join(context.args).upper()
         if self.html_replies.set_language(user_lang):
-            utils.set_user_language(chat_id, user_lang, self.mongodb_account)
+            self.mongodb.set_chat_language(chat_id, user_lang)
             update.message.reply_html(
                 self.html_replies.reply("change_lang_success.html")
             )
@@ -81,7 +84,7 @@ class CardaBotCallbacks:
         if not context.args:
             # if there are no args, change default pool to `EBS`
             default_pool = "EBS"
-            utils.set_default_pool(chat_id, default_pool, self.mongodb_account)
+            self.mongodb.set_default_pool(chat_id, default_pool)
             update.message.reply_html(
                 # TODO: modify template to pass pool ticker as argument
                 self.html_replies.reply("change_default_pool_success.html")
@@ -89,7 +92,7 @@ class CardaBotCallbacks:
             return
 
         user_pool = "".join(context.args).upper()
-        utils.set_default_pool(chat_id, user_pool, self.mongodb_account)
+        self.mongodb.set_default_pool(chat_id, user_pool)
         update.message.reply_html(
             self.html_replies.reply("change_default_pool_success.html")
         )
@@ -214,11 +217,7 @@ class CardaBotCallbacks:
         return ""
 
     def pool_info(self, update, context):
-        chat = utils.get_chat_obj_database(
-            update.effective_chat.id, self.mongodb_account
-        )
-        language = chat["language"]
-
+        language = self.mongodb.get_chat_language(update.effective_chat.id)
         update.message.reply_html("""Temporarily disabled, sorry 😞""")
 
         return ""
