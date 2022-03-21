@@ -23,8 +23,7 @@ class CardaBotCallbacks:
         chat = utils.get_chat_obj_database(
             update.effective_chat.id, self.mongodb_account
         )
-
-        out = self.html_replies.set_language(chat["language"])
+        self.html_replies.set_language(chat["language"])
 
         update.message.reply_html(
             self.html_replies.reply(
@@ -157,53 +156,16 @@ class CardaBotCallbacks:
             ),
         )
 
-    def tip(self, update, context):
+    def start(self, update, context):
         chat = utils.get_chat_obj_database(
             update.effective_chat.id, self.mongodb_account
         )
-        chat_id = update.effective_chat.id
-        language = chat["language"]
+        self.html_replies.set_language(chat["language"])
 
-        message = context.bot.send_message(
-            chat_id=chat_id,
-            text="Click the button below to sign your transaction using Nami wallet: ⬇️",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="🔑 Sign Tx",
-                            url="https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="📖 Learn more",
-                            url="https://instagram.com/EveryBlockStudio",
-                        )
-                    ],
-                ]
-            ),
-        )
+        update.message.reply_html(self.html_replies.reply("welcome.html"))
+        self.help(update, context)
 
-        time.sleep(10)
-
-        message.edit_text(
-            text="✅ Your transaction was submitted!",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="Check Tx on CardanoScan",
-                            url="https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d",
-                        )
-                    ],
-                ]
-            ),
-        )
-
-        return ""
-
-    def poolinfo(self, update, context):
+    def pool_info(self, update, context):
         chat = utils.get_chat_obj_database(
             update.effective_chat.id, self.mongodb_account
         )
@@ -339,13 +301,5 @@ class CardaBotCallbacks:
                 poolinfo_reply_error[language].format(ticker=typed_ticker)
             )
 
-    def start(self, update, context):
-        chat = utils.get_chat_obj_database(
-            update.effective_chat.id, self.mongodb_account
-        )
-        language = chat["language"]
-
-        update.message.reply_html(reply_templates.welcome_reply[language])
-
-    def callback_minute(self, context):
-        context.bot.send_message(chat_id="162210437", text="One message every minute")
+    # def callback_minute(self, context):
+    #     context.bot.send_message(chat_id="162210437", text="One message every minute")

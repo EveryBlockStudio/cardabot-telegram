@@ -31,7 +31,7 @@ if __name__ == "__main__":
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("start", cbs.start))
-    dispatcher.add_handler(CommandHandler("pool", cbs.poolinfo))
+    dispatcher.add_handler(CommandHandler("pool", cbs.pool_info))
     dispatcher.add_handler(CommandHandler("language", cbs.change_language))
     dispatcher.add_handler(CommandHandler("setpool", cbs.change_default_pool))
     dispatcher.add_handler(CommandHandler("help", cbs.help))
