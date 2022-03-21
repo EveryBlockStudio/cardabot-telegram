@@ -19,11 +19,14 @@ class CardaBotCallbacks:
         self.blockfrost_headers = blockfrost_headers
         self.html_replies = html_replies
 
-    def help(self, update, context) -> None:
-        chat = utils.get_chat_obj_database(
-            update.effective_chat.id, self.mongodb_account
-        )
+    def _set_reply_lang(self, chat_id: int):
+        """Set HTML template language to current chat language."""
+        chat = utils.get_chat_obj_database(chat_id, self.mongodb_account)
         self.html_replies.set_language(chat["language"])
+
+    def help(self, update, context) -> None:
+        chat_id = update.effective_chat.id
+        self._set_reply_lang(chat_id)
 
         update.message.reply_html(
             self.html_replies.reply(
@@ -33,8 +36,7 @@ class CardaBotCallbacks:
 
     def change_language(self, update, context) -> None:
         chat_id = update.effective_chat.id
-        chat = utils.get_chat_obj_database(chat_id, self.mongodb_account)
-        self.html_replies.set_language(chat["language"])
+        self._set_reply_lang(chat_id)
 
         if update.effective_chat.type == "group":
             if not utils.user_is_adm(update, context):
@@ -44,8 +46,13 @@ class CardaBotCallbacks:
                 return
 
         if not context.args:
-            # TODO: define the expected behaviour when lang is not selected.
-            # Suggestion: set lang to the "default" language (EN).
+            # set language to default when no args are passed by the user
+            default = self.html_replies.default_lang
+            self.html_replies.set_language(default)
+            utils.set_user_language(chat_id, default, self.mongodb_account)
+            update.message.reply_html(
+                self.html_replies.reply("change_lang_success.html")
+            )
             return
 
         user_lang = "".join(context.args).upper()
@@ -60,6 +67,9 @@ class CardaBotCallbacks:
             )
 
     def change_default_pool(self, update, context) -> None:
+        chat_id = update.effective_chat.id
+        self._set_reply_lang(chat_id)
+
         if update.effective_chat.type == "group":
             if not utils.user_is_adm(update, context):
                 update.message.reply_html(
@@ -85,6 +95,9 @@ class CardaBotCallbacks:
         )
 
     def epoch_info(self, update, context) -> None:
+        chat_id = update.effective_chat.id
+        self._set_reply_lang(chat_id)
+
         target = "/epochs/latest"
         response = requests.get(
             os.environ.get("BLOCKFROST_URL") + target, headers=self.blockfrost_headers
@@ -92,7 +105,7 @@ class CardaBotCallbacks:
 
         if not response.ok:
             context.bot.send_message(
-                chat_id=update.effective_chat.id,
+                chat_id=chat_id,
                 text="Sorry, no response from server :(",
             )
             return
@@ -157,13 +170,48 @@ class CardaBotCallbacks:
         )
 
     def start(self, update, context):
-        chat = utils.get_chat_obj_database(
-            update.effective_chat.id, self.mongodb_account
-        )
-        self.html_replies.set_language(chat["language"])
+        self._set_reply_lang(update.effective_chat.id)
 
         update.message.reply_html(self.html_replies.reply("welcome.html"))
         self.help(update, context)
+
+    def tip(self, update, context):
+        message = context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="⬇️ Click the button below to sign your transaction using Nami wallet:",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="🔑 Sign Tx",
+                            url="https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="📖 Learn more",
+                            url="https://instagram.com/EveryBlockStudio",
+                        )
+                    ],
+                ]
+            ),
+        )
+        time.sleep(10)
+        message.edit_text(
+            text="✅ Your transaction was submitted!",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="Check Tx on CardanoScan",
+                            url="https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d",
+                        )
+                    ],
+                ]
+            ),
+        )
+
+        return ""
 
     def pool_info(self, update, context):
         chat = utils.get_chat_obj_database(
