@@ -1,4 +1,3 @@
-import random
 import os
 from datetime import datetime, timedelta
 import time
@@ -7,8 +6,6 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from . import utils
 from . import replies
-
-# from . import reply_templates
 
 
 class CardaBotCallbacks:
@@ -63,7 +60,7 @@ class CardaBotCallbacks:
                 self.html_replies.reply("change_lang_error.html", user_lang=user_lang)
             )
 
-    def change_default_pool(self, update, context):
+    def change_default_pool(self, update, context) -> None:
         if update.effective_chat.type == "group":
             if not utils.user_is_adm(update, context):
                 update.message.reply_html(
@@ -88,134 +85,77 @@ class CardaBotCallbacks:
             self.html_replies.reply("change_default_pool_success.html")
         )
 
-    # def change_default_pool(self, update, context):
-    #     chat = utils.get_chat_obj_database(
-    #         update.effective_chat.id, self.mongodb_account
-    #     )
-    #     language = chat["language"]
-
-    #     is_admin = False
-    #     if update.effective_chat.type == "group":
-    #         if update.effective_user.id in utils.get_admin_ids(
-    #             context.bot, update.message.chat_id
-    #         ):
-    #             is_admin = True
-    #     else:
-    #         is_admin = True
-
-    #     if is_admin:
-    #         # Extract language ID from message
-    #         if context.args:
-    #             user_pool = " ".join(context.args).upper()
-
-    #             utils.set_default_pool(
-    #                 update.effective_chat.id, user_pool, self.mongodb_account
-    #             )
-    #             update.message.reply_html(
-    #                 reply_templates.change_default_pool_reply[language]
-    #             )
-
-    #         else:
-    #             while True:
-    #                 random_lang = random.choice(reply_templates.supported_languages)
-    #                 if random_lang != language:
-    #                     language = random_lang
-    #                     break
-
-    #             utils.set_user_language(
-    #                 update.effective_chat.id, language, self.mongodb_account
-    #             )
-    #             update.message.reply_html(reply_templates.change_lang_reply[language])
-
-    #     else:
-    #         update.message.reply_html(f"You're not authorized to do that 😞")
-
-    def epochinfo(self, update, context):
-        chat = utils.get_chat_obj_database(
-            update.effective_chat.id, self.mongodb_account
-        )
-        language = chat["language"]
-
-        total_blocks = 21600
-        total_supply = 45000000000000000
-
+    def epoch_info(self, update, context) -> None:
         target = "/epochs/latest"
-
-        r = requests.get(
+        response = requests.get(
             os.environ.get("BLOCKFROST_URL") + target, headers=self.blockfrost_headers
         )
 
-        if r.status_code == 200:
-
-            json_data_netinfo = r.json()
-
-            # parse json
-            current_epoch = int(json_data_netinfo["epoch"])
-            current_block = int(json_data_netinfo["block_count"])
-            next_epoch_time = int(json_data_netinfo["end_time"])
-
-            # get current time
-            current_time = int(datetime.utcnow().timestamp())
-
-            # calc diff time
-            remaining_time_int = next_epoch_time - current_time
-            remaining_time = timedelta(seconds=remaining_time_int)
-
-            # get perc bar and number
-            perc = (current_block / total_blocks) * 100
-            progress_bar = utils.get_progress_bar(perc)
-
-            total_active_stake = int(json_data_netinfo["active_stake"])
-
-            update.message.reply_html(
-                reply_templates.epoch_reply[language].format(
-                    progress_bar=progress_bar,
-                    perc=perc,
-                    current_epoch=current_epoch,
-                    current_block=current_block,
-                    remaining_time=utils.fmt_time(
-                        remaining_time,
-                        # language,
-                        reply_templates.days_text[language],
-                    ),
-                    active_stake=utils.fmt_ada(
-                        utils.lovelace_to_ada(total_active_stake)
-                    ),
-                )
-            )
-
-        else:
+        if not response.ok:
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text="Sorry, no response from server :(",
             )
+            return
 
-    def ebs(self, update, context):
-        chat = utils.get_chat_obj_database(
-            update.effective_chat.id, self.mongodb_account
+        data = response.json()
+        current_time = int(datetime.utcnow().timestamp())
+        remaining_time = timedelta(seconds=int(data["end_time"]) - current_time)
+
+        total_blocks = 21600  # total blocks/epoch
+        current_block = int(data["block_count"])
+        blocks_percentage = (current_block / total_blocks) * 100
+
+        template_args = {
+            "progress_bar": utils.get_progress_bar(blocks_percentage),
+            "perc": blocks_percentage,
+            "current_epoch": int(data["epoch"]),
+            "current_block": current_block,
+            "remaining_time": utils.fmt_time(
+                remaining_time,
+                self.html_replies.reply("days.html"),
+            ),
+            "active_stake": utils.fmt_ada(
+                utils.lovelace_to_ada(int(data["active_stake"]))
+            ),
+        }
+
+        update.message.reply_html(
+            self.html_replies.reply("epoch_info.html", **template_args)
         )
-        language = chat["language"]
 
+    def ebs(self, update, context) -> None:
         update.message.reply_text(
-            "Subscribe to us on Twitter and Instagram:",
+            "🔔 Follow us on social media!",
+            #
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            text="on Twitter", url="https://twitter.com/EveryBlockStd"
+                            text="✨ Twitter ✨", url="https://twitter.com/EveryBlockStd"
                         )
                     ],
                     [
                         InlineKeyboardButton(
-                            text="on Instagram",
+                            text="✨ Instagram ✨",
                             url="https://instagram.com/EveryBlockStudio",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="✨ LinkedIn ✨",
+                            url="https://www.linkedin.com/company/everyblock-studio/",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="✨ Telegram ✨",
+                            url="https://t.me/EveryBlockStudio",
                         )
                     ],
                 ]
             ),
         )
-
-        return ""
 
     def tip(self, update, context):
         chat = utils.get_chat_obj_database(
