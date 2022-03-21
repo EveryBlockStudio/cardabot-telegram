@@ -4,7 +4,6 @@ import subprocess
 import glob
 from cachetools import cached, TTLCache
 import datetime
-import pymongo
 
 
 def bech32_to_hex(pool_bech32):
