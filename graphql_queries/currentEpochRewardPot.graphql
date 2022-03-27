@@ -1,0 +1,12 @@
+query currentEpochRewardPot {
+  epochs(limit: 1, order_by: { number: desc }) {
+    adaPots {
+      deposits
+      fees
+      reserves
+      rewards
+      treasury
+      utxo
+    }
+  }
+}
