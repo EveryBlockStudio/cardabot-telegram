@@ -1,0 +1,7 @@
+query nActiveStakePools {
+  stakePools_aggregate {
+    aggregate {
+      count
+    }
+  }
+}

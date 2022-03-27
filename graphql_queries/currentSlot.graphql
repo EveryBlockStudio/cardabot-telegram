@@ -1,0 +1,8 @@
+query currentSlot {
+  cardano {
+    tip {
+      slotNo
+      slotInEpoch
+    }
+  }
+}

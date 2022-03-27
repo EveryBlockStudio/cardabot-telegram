@@ -1,0 +1,6 @@
+query latestBlock {
+  epochs(limit: 1, order_by: { number: desc }) {
+    blocksCount
+    number
+  }
+}

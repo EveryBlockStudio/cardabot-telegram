@@ -1,0 +1,6 @@
+query currentEpochStartedAt {
+  epochs(limit: 1, order_by: { number: desc }) {
+    startedAt
+    number
+  }
+}

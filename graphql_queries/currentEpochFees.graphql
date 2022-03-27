@@ -1,0 +1,5 @@
+query currentEpochFees {
+  epochs(limit: 1, order_by: { number: desc }) {
+    fees
+  }
+}

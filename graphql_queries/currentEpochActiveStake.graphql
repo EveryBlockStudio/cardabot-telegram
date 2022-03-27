@@ -1,0 +1,11 @@
+query currentEpochActiveStake {
+  epochs(limit: 1, order_by: { number: desc }) {
+    activeStake_aggregate {
+      aggregate {
+        sum {
+          amount
+        }
+      }
+    }
+  }
+}
