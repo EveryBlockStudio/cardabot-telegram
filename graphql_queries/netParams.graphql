@@ -1,0 +1,12 @@
+query netParams($epoch: Int!) {
+  epochs(where: { number: { _eq: $epoch } }) {
+    protocolParams {
+      a0
+      minPoolCost
+      minUTxOValue
+      nOpt
+      rho
+      tau
+    }
+  }
+}
