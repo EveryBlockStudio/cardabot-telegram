@@ -1,5 +1,5 @@
-query currentEpochRewardPot {
-  epochs(limit: 1, order_by: { number: desc }) {
+query adaPot($epoch: Int!) {
+  epochs(where: { number: { _eq: $epoch } }) {
     adaPots {
       deposits
       fees
