@@ -1,0 +1,5 @@
+query txsInEpoch($epoch: Int!) {
+  epochs(where: { number: { _eq: $epoch } }) {
+    transactionsCount
+  }
+}

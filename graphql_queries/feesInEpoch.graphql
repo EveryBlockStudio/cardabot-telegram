@@ -1,5 +1,5 @@
-query latestBlock($epoch: Int!) {
+query feesInEpoch($epoch: Int!) {
   epochs(where: { number: { _eq: $epoch } }) {
-    blocksCount
+    fees
   }
 }

@@ -1,5 +1,5 @@
-query currentEpochActiveStake {
-  epochs(limit: 1, order_by: { number: desc }) {
+query activeStake($epoch: Int!) {
+  epochs(where: { number: { _eq: $epoch } }) {
     activeStake_aggregate {
       aggregate {
         sum {

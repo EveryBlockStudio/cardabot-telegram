@@ -1,5 +1,0 @@
-query currentEpochTxsCount {
-  epochs(limit: 1, order_by: { number: desc }) {
-    transactionsCount
-  }
-}
