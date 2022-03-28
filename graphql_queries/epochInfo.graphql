@@ -1,0 +1,21 @@
+query epochInfo($epoch: Int!) {
+  epochs(where: { number: { _eq: $epoch } }) {
+    transactionsCount
+    fees
+    activeStake_aggregate {
+      aggregate {
+        sum {
+          amount
+        }
+      }
+    }
+    protocolParams {
+      nOpt
+    }
+  }
+  stakePools_aggregate {
+      aggregate {
+        count
+      }
+    }
+}
