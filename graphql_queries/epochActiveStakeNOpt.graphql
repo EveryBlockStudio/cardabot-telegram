@@ -1,0 +1,14 @@
+query epochActiveStakeNOpt($epoch: Int!) {
+  epochs(where: { number: { _eq: $epoch } }) {
+    activeStake_aggregate {
+      aggregate {
+        sum {
+          amount
+        }
+      }
+    }
+    protocolParams {
+      nOpt
+    }
+  }
+}

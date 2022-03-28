@@ -1,0 +1,25 @@
+query stakePoolDetails($id: StakePoolID!) {
+  stakePools(where: { id: { _eq: $id } }) {
+    activeStake_aggregate {
+      aggregate {
+        sum {
+          amount
+        }
+      }
+    }
+    pledge
+    delegators_aggregate {
+      aggregate {
+        count
+      }
+    }
+    fixedCost
+    margin
+    blocks_aggregate {
+      aggregate {
+        count
+      }
+    }
+    url
+  }
+}
