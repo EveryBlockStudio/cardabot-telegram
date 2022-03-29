@@ -20,14 +20,14 @@ class CardaBotCallbacks:
         self.blockfrost_headers = blockfrost_headers
         self.html_replies = html_replies
 
-    def _set_reply_lang(self, chat_id: int):
+    def _set_html_reply_lang(self, chat_id: int):
         """Set HTML template language to current chat language."""
         language = self.mongodb.get_chat_language(chat_id)
         self.html_replies.set_language(language)
 
     def help(self, update, context) -> None:
         chat_id = update.effective_chat.id
-        self._set_reply_lang(chat_id)
+        self._set_html_reply_lang(chat_id)
 
         update.message.reply_html(
             self.html_replies.reply(
@@ -37,7 +37,7 @@ class CardaBotCallbacks:
 
     def change_language(self, update, context) -> None:
         chat_id = update.effective_chat.id
-        self._set_reply_lang(chat_id)
+        self._set_html_reply_lang(chat_id)
 
         if update.effective_chat.type == "group":
             if not utils.user_is_adm(update, context):
@@ -70,7 +70,7 @@ class CardaBotCallbacks:
 
     def change_default_pool(self, update, context) -> None:
         chat_id = update.effective_chat.id
-        self._set_reply_lang(chat_id)
+        self._set_html_reply_lang(chat_id)
 
         if update.effective_chat.type == "group":
             if not utils.user_is_adm(update, context):
@@ -98,7 +98,7 @@ class CardaBotCallbacks:
 
     def epoch_info(self, update, context) -> None:
         chat_id = update.effective_chat.id
-        self._set_reply_lang(chat_id)
+        self._set_html_reply_lang(chat_id)
 
         target = "/epochs/latest"
         response = requests.get(
@@ -172,7 +172,7 @@ class CardaBotCallbacks:
         )
 
     def start(self, update, context):
-        self._set_reply_lang(update.effective_chat.id)
+        self._set_html_reply_lang(update.effective_chat.id)
 
         update.message.reply_html(self.html_replies.reply("welcome.html"))
         self.help(update, context)
