@@ -1,12 +1,15 @@
 import os
 from datetime import datetime, timedelta
 import time
+import logging
+
 import requests
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
 
 from . import mongodb
 from . import utils
 from . import replies
+from . import graphql_client
 
 
 class CardaBotCallbacks:
@@ -14,16 +17,41 @@ class CardaBotCallbacks:
         self,
         mongodb: mongodb.MongoDatabase,
         html_replies: replies.HTMLReplies,
-        blockfrost_headers: dict,
+        graphql_client: graphql_client.GraphQLClient,
     ) -> None:
         self.mongodb = mongodb
-        self.blockfrost_headers = blockfrost_headers
         self.html_replies = html_replies
+        self.gql = graphql_client
 
     def _set_html_reply_lang(self, chat_id: int):
         """Set HTML template language to current chat language."""
         language = self.mongodb.get_chat_language(chat_id)
         self.html_replies.set_language(language)
+
+    def _inform_error(self, context, chat_id):
+        context.bot.send_message(
+            chat_id=chat_id,
+            text="Sorry, something went wrong 😔",
+        )
+
+    def _setup_callback(func):
+        """Decorator to setup callback configs and handle specific exceptions."""
+
+        def callback(self, update, context):
+            try:
+                chat_id = update.effective_chat.id
+                self._set_html_reply_lang(chat_id)
+                func(self, update, context)
+
+            # invalid GraphQL responses can cause KeyErrors, TypeErros, AttributeErrors,
+            # and HTTPErrors depending on how you make the call or try to access the
+            # response dictionary
+            except Exception as e:
+                self._inform_error(context, chat_id)
+                logging.exception(e)
+                return
+
+        return callback
 
     def help(self, update, context) -> None:
         chat_id = update.effective_chat.id
@@ -96,43 +124,36 @@ class CardaBotCallbacks:
             self.html_replies.reply("change_default_pool_success.html")
         )
 
+    @_setup_callback
     def epoch_info(self, update, context) -> None:
-        chat_id = update.effective_chat.id
-        self._set_html_reply_lang(chat_id)
+        """Get information about the current epoch (/epoch)."""
+        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
+        var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
+        epochInfo = self.gql.caller("epochInfo.graphql", var).get("data")
 
-        target = "/epochs/latest"
-        response = requests.get(
-            os.environ.get("BLOCKFROST_URL") + target, headers=self.blockfrost_headers
+        started_at = datetime.fromisoformat(
+            # [:-1] to remove the final "Z" from timestamp
+            epochInfo["epochs"][0]["startedAt"][:-1]
         )
+        remaining_time = started_at + timedelta(days=5) - datetime.utcnow()
 
-        if not response.ok:
-            context.bot.send_message(
-                chat_id=chat_id,
-                text="Sorry, no response from server :(",
-            )
-            return
+        total_slots_epoch = 432000
+        perc = currentEpochTip["cardano"]["tip"]["slotInEpoch"] / total_slots_epoch
 
-        data = response.json()
-        current_time = int(datetime.utcnow().timestamp())
-        remaining_time = timedelta(seconds=int(data["end_time"]) - current_time)
-
-        total_blocks = 21600  # total blocks/epoch
-        current_block = int(data["block_count"])
-        blocks_percentage = (current_block / total_blocks) * 100
-
+        # fmt: off
         template_args = {
-            "progress_bar": utils.get_progress_bar(blocks_percentage),
-            "perc": blocks_percentage,
-            "current_epoch": int(data["epoch"]),
-            "current_block": current_block,
-            "remaining_time": utils.fmt_time(
-                remaining_time,
-                self.html_replies.reply("days.html"),
-            ),
-            "active_stake": utils.fmt_ada(
-                utils.lovelace_to_ada(int(data["active_stake"]))
-            ),
+            "progress_bar": utils.get_progress_bar(perc * 100),
+            "perc": perc * 100,
+            "current_epoch": currentEpochTip["cardano"]["currentEpoch"]["number"],
+            "current_slot": currentEpochTip["cardano"]["tip"]["slotNo"],
+            "slot_in_epoch": currentEpochTip["cardano"]["tip"]["slotInEpoch"],
+            "txs_in_epoch": epochInfo["epochs"][0]["transactionsCount"],
+            "fees_in_epoch": utils.fmt_ada(utils.lovelace_to_ada(int(epochInfo["epochs"][0]["fees"]))),
+            "active_stake": utils.fmt_ada(utils.lovelace_to_ada(int(epochInfo["epochs"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]))),
+            "n_active_stake_pools": epochInfo["stakePools_aggregate"]["aggregate"]["count"],
+            "remaining_time": utils.fmt_time(remaining_time, self.html_replies.reply("days.html")),
         }
+        # fmt: on
 
         update.message.reply_html(
             self.html_replies.reply("epoch_info.html", **template_args)

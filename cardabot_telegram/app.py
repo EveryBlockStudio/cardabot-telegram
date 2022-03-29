@@ -6,6 +6,7 @@ from telegram.ext import Updater, CommandHandler
 from .callbacks import CardaBotCallbacks
 from .replies import HTMLReplies
 from .mongodb import MongoDatabase
+from .graphql_client import GraphQLClient
 
 
 if __name__ == "__main__":
@@ -17,7 +18,7 @@ if __name__ == "__main__":
     cbs = CardaBotCallbacks(
         mongodb=MongoDatabase(os.environ.get("CONN_STR")),
         html_replies=HTMLReplies(),
-        blockfrost_headers={"project_id": os.environ.get("PROJECT_ID")},
+        graphql_client=GraphQLClient(os.environ.get("GRAPHQL_URL")),
     )
 
     # telegram bot handlers

@@ -66,18 +66,18 @@ def get_progress_bar(percentage: float) -> str:
     return pbar.get(tens * 10, "[▱▱▱▱▱▱▱▱▱▱]")
 
 
-def fmt_time(timedelta: datetime.timedelta, days_text: str) -> str:
+def fmt_time(remaning_time: datetime.timedelta, days_text: str) -> str:
     """Format a timedelta object to string in multiple languages."""
-    hours, remainder = divmod(timedelta.seconds, 3600)
+    hours, remainder = divmod(remaning_time.seconds, 3600)
     minutes, _ = divmod(remainder, 60)
 
     minute_limit, hour_limit = (60 * 60), (60 * 60 * 24)
-    if timedelta.days == 0 and timedelta.seconds < minute_limit:
+    if remaning_time.days == 0 and remaning_time.seconds < minute_limit:
         return f"{minutes}m"
-    elif timedelta.days == 0 and timedelta.seconds < hour_limit:
+    elif remaning_time.days == 0 and remaning_time.seconds < hour_limit:
         return f"{hours}h{minutes}m"
 
-    return f"{timedelta.days} {days_text}, {hours}h{minutes}m"
+    return f"{remaning_time.days} {days_text}, {hours}h{minutes}m"
 
 
 def lovelace_to_ada(lovelace_value: float) -> float:

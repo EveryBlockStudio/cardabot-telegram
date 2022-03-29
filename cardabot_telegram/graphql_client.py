@@ -27,6 +27,6 @@ class GraphQLClient:
 
         except FileNotFoundError as e:
             logging.exception(e)
-            return {}
+            return {}  # !TODO: treat this error
 
         return self.endpoint(query, variables)
