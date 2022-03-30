@@ -198,44 +198,6 @@ class CardaBotCallbacks:
         update.message.reply_html(self.html_replies.reply("welcome.html"))
         self.help(update, context)
 
-    def tip(self, update, context):
-        message = context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="⬇️ Click the button below to sign your transaction using Nami wallet:",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="🔑 Sign Tx",
-                            url="https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="📖 Learn more",
-                            url="https://instagram.com/EveryBlockStudio",
-                        )
-                    ],
-                ]
-            ),
-        )
-        time.sleep(10)
-        message.edit_text(
-            text="✅ Your transaction was submitted!",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="Check Tx on CardanoScan",
-                            url="https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d",
-                        )
-                    ],
-                ]
-            ),
-        )
-
-        return ""
-
     @_setup_callback
     def pool_info(self, update, context):
         """Get pool basic info (/pool)."""
@@ -300,133 +262,70 @@ class CardaBotCallbacks:
             self.html_replies.reply("pool_info.html", **template_args)
         )
 
-        return
+    @_setup_callback
+    def pots(self, update, context):
+        """Get info about cardano pots (/pots)."""
+        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
+        var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
+        adaPot = self.gql.caller("adaPot.graphql", var).get("data")["epochs"][0]
 
-        update.message.reply_html(poolinfo_reply_wait[language])
+        template_args = {
+            "treasury": utils.fmt_ada(
+                utils.lovelace_to_ada(int(adaPot["adaPots"]["treasury"]))
+            ),
+            "reserves": utils.fmt_ada(
+                utils.lovelace_to_ada(int(adaPot["adaPots"]["reserves"]))
+            ),
+            "fees": utils.fmt_ada(
+                utils.lovelace_to_ada(int(adaPot["adaPots"]["fees"]))
+            ),
+            "rewards": utils.fmt_ada(
+                utils.lovelace_to_ada(int(adaPot["adaPots"]["rewards"]))
+            ),
+            "utxo": utils.fmt_ada(
+                utils.lovelace_to_ada(int(adaPot["adaPots"]["utxo"]))
+            ),
+            "deposits": utils.fmt_ada(
+                utils.lovelace_to_ada(int(adaPot["adaPots"]["deposits"]))
+            ),
+        }
 
-        target = "/stake-pools?stake=1000000"
-        r = requests.get(BLOCKFROST_URL + target)
+        update.message.reply_html(self.html_replies.reply("pots.html", **template_args))
 
-        json_data = r.json()
+    def tip(self, update, context):
+        message = context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="⬇️ Click the button below to sign your transaction using Nami wallet:",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="🔑 Sign Tx",
+                            url="https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="📖 Learn more",
+                            url="https://instagram.com/EveryBlockStudio",
+                        )
+                    ],
+                ]
+            ),
+        )
+        time.sleep(10)
+        message.edit_text(
+            text="✅ Your transaction was submitted!",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="Check Tx on CardanoScan",
+                            url="https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d",
+                        )
+                    ],
+                ]
+            ),
+        )
 
-        if context.args:
-            typed_ticker = " ".join(context.args)
-        else:
-            typed_ticker = chat["default_pool"]
-
-        gotpool = False
-
-        for ind, pool in enumerate(json_data):
-
-            if (
-                "metadata" in pool
-                and pool["metadata"]["ticker"].upper() == typed_ticker.upper()
-            ):
-                # print(ind,pool)
-
-                # update.message.reply_html(pool)
-
-                # Wallet data
-                gotpool = True
-                pool_name = pool["metadata"]["name"]
-                homepage = pool["metadata"]["homepage"]
-                pool_ticker = pool["metadata"]["ticker"]
-                desc = pool["metadata"]["description"]
-
-                pool_id_bech32 = pool["id"]
-                pool_id = bech32_to_hex(pool_id_bech32)
-
-                site = pool["metadata"]["homepage"]
-                rank = ind + 1
-                pledge = pool["pledge"]["quantity"]
-                cost = pool["cost"]["quantity"]
-                margin_perc = pool["margin"]["quantity"]
-
-                # Metrics from wallet
-                # saturat = pool['metrics']['saturation']
-                rel_stake_perc = pool["metrics"]["relative_stake"]["quantity"]
-                blocks = pool["metrics"]["produced_blocks"]["quantity"]
-                rewards = pool["metrics"]["non_myopic_member_rewards"]["quantity"]
-
-                try:
-                    # ledger-state data
-                    # get information from db files
-                    cwd = os.getcwd()
-                    db_filename = get_last_file(cwd + "/db")
-                    with open(db_filename, "r") as f:
-                        json_data_db = json.load(f)
-
-                    total_active_stake = json_data_db["total_active_stake"]
-                    d_param = json_data_db["esPp"]["decentralisationParam"]
-
-                    stake_data = json_data_db["pools_stake"][pool_id]
-                    pool_live_stake = stake_data["live"]["amount_stake"]
-                    pool_n_live_delegators = stake_data["live"]["n_delegators"]
-
-                    pool_active_stake = stake_data["active"]["amount_stake"]
-                    pool_n_active_delegators = stake_data["active"]["n_delegators"]
-
-                except:
-                    gotpool = False
-                    break
-
-                # get current time
-                current_time = datetime.utcnow()
-                last_update_time = datetime.strptime(
-                    json_data_db["timestamp"], "%Y-%m-%dT%H-%M-%S"
-                )
-                # calc diff time of last update
-                updated_time_ago = current_time - last_update_time
-
-                # get expected blocks for the pool
-                expected_blocks = calc_expected_blocks(
-                    pool_active_stake, total_active_stake, d_param
-                )
-
-                # calculate saturation from live stake
-                total_supply = 45000000000000000
-                reserves = json_data_db["esAccountState"]["_reserves"]
-                treasury = json_data_db["esAccountState"]["_treasury"]
-                circulating_supply = total_supply - (reserves + treasury)
-                saturat = calc_pool_saturation(
-                    pool_live_stake, circulating_supply, nOpt=500
-                )
-
-                update.message.reply_html(
-                    poolinfo_reply[language].format(
-                        quote=True,
-                        ticker=pool_ticker,
-                        pool_id=pool_id,
-                        pool_name=pool_name,
-                        homepage=homepage,
-                        desc=desc,
-                        pool_rank=rank,
-                        pledge=lovelace_to_ada(pledge),  # update this later
-                        cost=lovelace_to_ada(cost),  # update this later
-                        margin_perc=margin_perc,
-                        saturat=saturat * 100,
-                        saturat_symbol=get_saturat_symbol(saturat),
-                        rel_stake_perc=rel_stake_perc,
-                        expected_blocks=expected_blocks,
-                        blocks=blocks,
-                        block_produced_symbol=get_block_symbol(blocks),
-                        live_stake=lovelace_to_ada(
-                            pool_live_stake
-                        ),  # update this later
-                        n_live_delegators=pool_n_live_delegators,
-                        active_stake=lovelace_to_ada(
-                            pool_active_stake
-                        ),  # update this later
-                        n_active_delegators=pool_n_active_delegators,
-                        updated_time_ago=beauty_time(updated_time_ago, language),
-                    )
-                )
-                break
-
-        if not gotpool:
-            update.message.reply_html(
-                poolinfo_reply_error[language].format(ticker=typed_ticker)
-            )
-
-    # def callback_minute(self, context):
-    #     context.bot.send_message(chat_id="162210437", text="One message every minute")
+        return ""
