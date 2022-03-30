@@ -292,6 +292,30 @@ class CardaBotCallbacks:
 
         update.message.reply_html(self.html_replies.reply("pots.html", **template_args))
 
+    @_setup_callback
+    def netparams(self, update, context):
+        """Get network parameters (/netparams)."""
+        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
+        var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
+        netParams = self.gql.caller("netParams.graphql", var).get("data")["epochs"][0]
+
+        template_args = {
+            "a0": netParams["protocolParams"]["a0"],
+            "min_pool_cost": utils.fmt_ada(
+                utils.lovelace_to_ada(int(netParams["protocolParams"]["minPoolCost"]))
+            ),
+            "min_utxo_value": utils.lovelace_to_ada(
+                int(netParams["protocolParams"]["minUTxOValue"])
+            ),
+            "n_opt": netParams["protocolParams"]["nOpt"],
+            "rho": netParams["protocolParams"]["rho"],
+            "tau": netParams["protocolParams"]["tau"],
+        }
+
+        update.message.reply_html(
+            self.html_replies.reply("netparams.html", **template_args)
+        )
+
     def tip(self, update, context):
         message = context.bot.send_message(
             chat_id=update.effective_chat.id,
