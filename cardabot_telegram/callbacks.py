@@ -236,11 +236,71 @@ class CardaBotCallbacks:
 
         return ""
 
+    @_setup_callback
     def pool_info(self, update, context):
-        language = self.mongodb.get_chat_language(update.effective_chat.id)
-        update.message.reply_html("""Temporarily disabled, sorry 😞""")
+        """Get pool basic info (/pool)."""
+        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
 
-        return ""
+        var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
+        activeStake = self.gql.caller("epochActiveStakeNOpt.graphql", var).get("data")
+        adaSupply = self.gql.caller("adaSupply.graphql").get("data")
+
+        # get stake_id
+        if context.args:
+            stake_id = str("".join(context.args))
+        else:
+            chat_id = update.effective_chat.id
+            stake_id = self.mongodb.get_chat_default_pool(chat_id)
+
+        var = {"id": stake_id}
+        # !TODO: treat in case stake_id is not valid
+        stakePoolDetails = self.gql.caller("stakePoolDetails.graphql", var).get("data")
+
+        # get pool metadata
+        url = stakePoolDetails["stakePools"][0]["url"]
+
+        metadata = {}
+        res = requests.get(url)
+        if res.json():
+            metadata = res.json()
+
+        # fmt: off
+        stake = stakePoolDetails["stakePools"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]
+        total_stake = stakePoolDetails["activeStake_aggregate"]["aggregate"]["sum"]["amount"]
+        # fmt: on
+
+        controlled_stake_perc = (int(stake) / int(total_stake)) * 100
+        circ_supply = adaSupply["ada"]["supply"]["circulating"]
+        n_opt = activeStake["epochs"][0]["protocolParams"]["nOpt"]
+
+        saturation = utils.calc_pool_saturation(
+            int(stake), int(circ_supply), int(n_opt)
+        )
+
+        # fmt: off
+        template_args = {
+            "ticker": metadata.get("ticker", "NOT FOUND."),
+            "name": metadata.get("name", "NOT FOUND."),
+            "description": metadata.get("description", "NOT FOUND."),
+            "homepage": metadata.get("homepage", "NOT FOUND."),
+            "pool_id": stakePoolDetails["stakePools"][0]["id"],
+            "pledge": utils.fmt_ada(utils.lovelace_to_ada(int(stakePoolDetails["stakePools"][0]["pledge"]))),
+            "fixed_cost": utils.fmt_ada(utils.lovelace_to_ada(int(stakePoolDetails["stakePools"][0]["fixedCost"]))),
+            "margin": stakePoolDetails["stakePools"][0]["margin"] * 100,
+            "saturation": saturation * 100,  # !TODO: fix
+            "saturation_symbol": utils.get_saturation_icon(saturation),  # !TODO: fix
+            "controlled_stake_perc": controlled_stake_perc,  # !TODO: fix
+            "active_stake_amount": utils.fmt_ada(utils.lovelace_to_ada(int(stake))),  # !TODO: fix
+            "delegators_count": stakePoolDetails["stakePools"][0]["delegators_aggregate"]["aggregate"]["count"],
+            "blocks_count": stakePoolDetails["stakePools"][0]["blocks_aggregate"]["aggregate"]["count"],
+        }
+        # fmt: on
+
+        update.message.reply_html(
+            self.html_replies.reply("pool_info.html", **template_args)
+        )
+
+        return
 
         update.message.reply_html(poolinfo_reply_wait[language])
 

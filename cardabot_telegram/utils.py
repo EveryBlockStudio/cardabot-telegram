@@ -15,7 +15,7 @@ def bech32_to_hex(pool_bech32):
     return process.stdout.strip().decode()
 
 
-def calc_pool_saturation(pool_stake, circ_supply, n_opt):
+def calc_pool_saturation(pool_stake: int, circ_supply: int, n_opt: int) -> float:
     sat_point = circ_supply / n_opt
     return pool_stake / sat_point
 

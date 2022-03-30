@@ -1,4 +1,12 @@
 query stakePoolDetails($id: StakePoolID!) {
+  activeStake_aggregate {
+    aggregate {
+      sum {
+        amount
+      }
+    }
+  }
+
   stakePools(where: { id: { _eq: $id } }) {
     activeStake_aggregate {
       aggregate {
