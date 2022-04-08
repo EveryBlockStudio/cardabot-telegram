@@ -1,0 +1,24 @@
+query netstats {
+  ada {
+    supply {
+      circulating
+    }
+  }
+  activeStake_aggregate {
+    aggregate {
+      sum {
+        amount
+      }
+    }
+  }
+  delegations_aggregate {
+    aggregate {
+      count
+    }
+  }
+  stakePools_aggregate {
+    aggregate {
+      count
+    }
+  }
+}

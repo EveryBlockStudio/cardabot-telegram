@@ -1,26 +1,18 @@
-<b><code>{ticker}</code> {pool_name}</b>
-<i>{desc}</i>
-🌐{homepage}
+<strong><code>{ticker}</code> {name}</strong>
+<em>{description}</em>
+🌐 {homepage}
 
-<b>🆔 Pool ID</b>
+<strong>🆔 Pool ID</strong>
 <code>{pool_id}</code>
 
-<b> ℹ️ Pool info</b>
-    rank: <code>#️{pool_rank}</code>
+<strong>ℹ️ Pool info</strong>
     pledge: <code>{pledge} ₳</code>
-    cost: <code>{cost} ₳</code>
-    margin: <code>{margin_perc}%</code>
-
-<b>📈 Metrics</b>
-    saturation: <code>{saturat:.2f}% {saturat_symbol}</code>
-    controlled stake: <code>{rel_stake_perc:.3f}%</code>
-    active stake: <code>{active_stake} ₳</code>
-      ↳ delegators: <code>{n_active_delegators}</code>
-    live stake: <code>{live_stake} ₳</code>
-      ↳ delegators: <code>{n_live_delegators}</code>
-
-<b>🎲 Blocks</b>
-    expected blocks (this /epoch): <code>~{expected_blocks:.1f}</code>
-    lifetime blocks: <code>{blocks}{block_produced_symbol}</code>
-
-<i>Live metrics updated {updated_time_ago} ago.</i>
+    cost: <code>{fixed_cost} ₳</code>
+    margin: <code>{margin:.2f}%</code>
+    
+<strong>📈 Metrics</strong>
+    saturation: <code>{saturation:.2f}% {saturation_symbol}</code>
+    controlled stake: <code>{controlled_stake_perc:.3f}%</code>
+    active stake: <code>{active_stake_amount} ₳</code>
+      ↳ delegators: <code>{delegators_count}</code>
+    lifetime blocks: <code>{blocks_count}</code>

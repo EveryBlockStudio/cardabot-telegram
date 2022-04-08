@@ -11,7 +11,11 @@ class MongoDatabase:
 
     def create_chat(self, chat_id: int) -> dict:
         """Create chat object with default options."""
-        json_obj = {"chat_id": chat_id, "language": "EN", "default_pool": "EBS"}
+        json_obj = {
+            "chat_id": chat_id,
+            "language": "EN",
+            "default_pool": "pool1ndtsklata6rphamr6jw2p3ltnzayq3pezhg0djvn7n5js8rqlzh",
+        }
         self.collection.insert_one(json_obj)
         return json_obj
 
@@ -27,6 +31,10 @@ class MongoDatabase:
             json_obj = self.create_chat(chat_id)
 
         return json_obj
+
+    def get_chat_default_pool(self, chat_id: int) -> str:
+        obj = self.get_chat(chat_id)
+        return obj["default_pool"]
 
     def get_chat_language(self, chat_id: int) -> str:
         obj = self.get_chat(chat_id)

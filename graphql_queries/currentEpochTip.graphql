@@ -1,0 +1,11 @@
+query currentEpochTip {
+  cardano {
+    currentEpoch {
+      number
+    }
+    tip {
+      slotNo
+      slotInEpoch
+    }
+  }
+}

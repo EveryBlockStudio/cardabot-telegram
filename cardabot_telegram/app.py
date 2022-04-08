@@ -6,6 +6,7 @@ from telegram.ext import Updater, CommandHandler
 from .callbacks import CardaBotCallbacks
 from .replies import HTMLReplies
 from .mongodb import MongoDatabase
+from .graphql_client import GraphQLClient
 
 
 if __name__ == "__main__":
@@ -17,7 +18,7 @@ if __name__ == "__main__":
     cbs = CardaBotCallbacks(
         mongodb=MongoDatabase(os.environ.get("CONN_STR")),
         html_replies=HTMLReplies(),
-        blockfrost_headers={"project_id": os.environ.get("PROJECT_ID")},
+        graphql_client=GraphQLClient(os.environ.get("GRAPHQL_URL")),
     )
 
     # telegram bot handlers
@@ -32,6 +33,8 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("ebs", cbs.ebs))
     dispatcher.add_handler(CommandHandler("tip", cbs.tip))
     dispatcher.add_handler(CommandHandler("epoch", cbs.epoch_info))
+    dispatcher.add_handler(CommandHandler("pots", cbs.pots))
+    dispatcher.add_handler(CommandHandler("netparams", cbs.netparams))
 
     # start bot with pooling (use when running local)
     updater.start_polling()
