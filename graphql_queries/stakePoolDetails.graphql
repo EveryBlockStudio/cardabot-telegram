@@ -1,4 +1,11 @@
 query stakePoolDetails($pool: StakePoolID!, $epoch: Int!) {
+  activeStake_aggregate {
+    aggregate {
+      sum {
+        amount
+      }
+    }
+  }
   stakePools(where: { id: { _eq: $pool } }) {
     activeStake_aggregate(where: { epochNo: { _eq: $epoch } }) {
       aggregate {
@@ -15,7 +22,10 @@ query stakePoolDetails($pool: StakePoolID!, $epoch: Int!) {
     }
     fixedCost
     margin
+    url
+    id
   }
+
   blocksThisEpoch: stakePools(where: { id: { _eq: $pool } }) {
     blocks_aggregate(where: { epoch: { number: { _eq: $epoch } } }) {
       aggregate {
@@ -23,6 +33,7 @@ query stakePoolDetails($pool: StakePoolID!, $epoch: Int!) {
       }
     }
   }
+
   lifetimeBlocks: stakePools(where: { id: { _eq: $pool } }) {
     blocks_aggregate {
       aggregate {

@@ -214,7 +214,10 @@ class CardaBotCallbacks:
             chat_id = update.effective_chat.id
             stake_id = self.mongodb.get_chat_default_pool(chat_id)
 
-        var = {"id": stake_id}
+        var = {
+            "pool": stake_id,
+            "epoch": currentEpochTip["cardano"]["currentEpoch"]["number"],
+        }
         # !TODO: treat in case stake_id is not valid
         stakePoolDetails = self.gql.caller("stakePoolDetails.graphql", var).get("data")
 
@@ -254,7 +257,8 @@ class CardaBotCallbacks:
             "controlled_stake_perc": controlled_stake_perc,  # !TODO: fix
             "active_stake_amount": utils.fmt_ada(utils.lovelace_to_ada(int(stake))),  # !TODO: fix
             "delegators_count": stakePoolDetails["stakePools"][0]["delegators_aggregate"]["aggregate"]["count"],
-            "blocks_count": stakePoolDetails["stakePools"][0]["blocks_aggregate"]["aggregate"]["count"],
+            "epoch_blocks_count": stakePoolDetails["blocksThisEpoch"][0]["blocks_aggregate"]["aggregate"]["count"],
+            "lifetime_blocks_count": stakePoolDetails["lifetimeBlocks"][0]["blocks_aggregate"]["aggregate"]["count"],
         }
         # fmt: on
 
