@@ -231,7 +231,7 @@ class CardaBotCallbacks:
 
         # fmt: off
         stake = stakePoolDetails["stakePools"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]
-        total_stake = stakePoolDetails["activeStake_aggregate"]["aggregate"]["sum"]["amount"]
+        total_stake = activeStake["epochs"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]
         # fmt: on
 
         controlled_stake_perc = (int(stake) / int(total_stake)) * 100
