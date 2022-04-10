@@ -1,14 +1,7 @@
-query netstats {
+query netstats($epoch: Int!, $time: DateTime) {
   ada {
     supply {
       circulating
-    }
-  }
-  activeStake_aggregate {
-    aggregate {
-      sum {
-        amount
-      }
     }
   }
   delegations_aggregate {
@@ -19,6 +12,25 @@ query netstats {
   stakePools_aggregate {
     aggregate {
       count
+    }
+  }
+  epochs(where: { number: { _eq: $epoch } }) {
+    activeStake_aggregate {
+      aggregate {
+        sum {
+          amount
+        }
+      }
+    }
+    protocolParams {
+      maxBlockBodySize
+    }
+  }
+  blocks_aggregate(where: { forgedAt: { _gte: $time } }) {
+    aggregate {
+      avg {
+        size
+      }
     }
   }
 }
