@@ -386,7 +386,7 @@ class CardaBotCallbacks:
         block_size_avg_24h = netstats["blocks_avg_24h"]["aggregate"]["avg"]["size"]
 
         template_args = {
-            "ada_in_circulation": ada_circulation_total,
+            "ada_in_circulation": utils.fmt_ada(utils.lovelace_to_ada(int(ada_circulation_total))),
             "percentage_in_stake": staked_perc,
             "stakepools": netstats["stakePools_aggregate"]["aggregate"]["count"],
             "delegations": netstats["delegations_aggregate"]["aggregate"]["count"],
