@@ -1,4 +1,4 @@
-query netstats($epoch: Int!, $time: DateTime) {
+query netstats($epoch: Int!, $time_1h: DateTime, $time_24h: DateTime) {
   ada {
     supply {
       circulating
@@ -26,7 +26,14 @@ query netstats($epoch: Int!, $time: DateTime) {
       maxBlockBodySize
     }
   }
-  blocks_aggregate(where: { forgedAt: { _gte: $time } }) {
+  blocks_avg_1h: blocks_aggregate(where: { forgedAt: { _gte: $time_1h } }) {
+    aggregate {
+      avg {
+        size
+      }
+    }
+  }
+  blocks_avg_24h: blocks_aggregate(where: { forgedAt: { _gte: $time_24h } }) {
     aggregate {
       avg {
         size

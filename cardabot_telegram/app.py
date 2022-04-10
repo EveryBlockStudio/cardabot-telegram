@@ -35,6 +35,7 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("epoch", cbs.epoch_info))
     dispatcher.add_handler(CommandHandler("pots", cbs.pots))
     dispatcher.add_handler(CommandHandler("netparams", cbs.netparams))
+    dispatcher.add_handler(CommandHandler("netstats", cbs.netstats))
 
     # start bot with pooling (use when running local)
     updater.start_polling()

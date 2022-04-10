@@ -357,3 +357,43 @@ class CardaBotCallbacks:
         )
 
         return ""
+
+    @_setup_callback
+    def netstats(self, update, context):
+        """Get network statistics (/netstats)."""
+        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
+
+        current_time = datetime.utcnow()
+        # fmt: off
+        time_1h_ago_iso = (current_time - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        time_24h_ago_iso = (current_time - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        # fmt: on
+        var = {
+            "epoch": currentEpochTip["cardano"]["currentEpoch"]["number"],
+            "time_1h": time_1h_ago_iso,
+            "time_24h": time_24h_ago_iso,
+        }
+        netstats = self.gql.caller("netstats.graphql", var).get("data")
+
+        # fmt: off
+        ada_circulation_total = netstats["ada"]["supply"]["circulating"]
+        active_stake_aggregate = netstats["epochs"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]
+        staked_perc = int(active_stake_aggregate) / int(ada_circulation_total) * 100
+        # fmt: on
+
+        max_block_size = netstats["epochs"][0]["protocolParams"]["maxBlockBodySize"]
+        block_size_avg_1h = netstats["blocks_avg_1h"]["aggregate"]["avg"]["size"]
+        block_size_avg_24h = netstats["blocks_avg_24h"]["aggregate"]["avg"]["size"]
+
+        template_args = {
+            "ada_in_circulation": ada_circulation_total,
+            "percentage_in_stake": staked_perc,
+            "stakepools": netstats["stakePools_aggregate"]["aggregate"]["count"],
+            "delegations": netstats["delegations_aggregate"]["aggregate"]["count"],
+            "load_1h": block_size_avg_1h / max_block_size * 100,
+            "load_24h": block_size_avg_24h / max_block_size * 100,
+        }
+
+        update.message.reply_html(
+            self.html_replies.reply("netstats.html", **template_args)
+        )
