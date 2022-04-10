@@ -48,6 +48,6 @@ class HTMLReplies:
         if not os.path.exists(path):
             path = f"templates/{self.default_lang}/{html_file}"
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             html = f.read().format(**kwargs).rstrip("\n")
         return html
