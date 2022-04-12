@@ -1,3 +1,5 @@
+from ctypes.wintypes import HENHMETAFILE
+from curses.ascii import HT
 import os
 from datetime import datetime, timedelta
 import time
@@ -8,7 +10,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
 
 from . import mongodb
 from . import utils
-from . import replies
+from .replies import HTMLReplies
 from . import graphql_client
 
 
@@ -16,18 +18,11 @@ class CardaBotCallbacks:
     def __init__(
         self,
         mongodb: mongodb.MongoDatabase,
-        html_replies: replies.HTMLReplies,
         graphql_client: graphql_client.GraphQLClient,
     ) -> None:
         self.mongodb = mongodb
-        self.html_replies = html_replies
         self.gql = graphql_client
         self.base_url = os.environ.get("CARDABOT_API_URL")
-
-    def _set_html_reply_lang(self, chat_id: int):
-        """Set HTML template language to current chat language."""
-        language = self.mongodb.get_chat_language(chat_id)
-        self.html_replies.set_language(language)
 
     def _inform_error(self, context, chat_id):
         context.bot.send_message(
@@ -41,8 +36,10 @@ class CardaBotCallbacks:
         def callback(self, update, context):
             try:
                 chat_id = update.effective_chat.id
-                self._set_html_reply_lang(chat_id)  # set HTML template language
-                func(self, update, context)
+                language = self.mongodb.get_chat_language(chat_id)
+                html = HTMLReplies()
+                html.set_language(language)
+                func(self, update, context, html)
 
             except Exception as e:
                 self._inform_error(context, chat_id)
@@ -51,81 +48,67 @@ class CardaBotCallbacks:
 
         return callback
 
-    def help(self, update, context) -> None:
-        chat_id = update.effective_chat.id
-        self._set_html_reply_lang(chat_id)
-
+    @_setup_callback
+    def help(self, update, context, html: HTMLReplies = HTMLReplies()) -> None:
         update.message.reply_html(
-            self.html_replies.reply(
-                "help.html", supported_languages=self.html_replies.supported_languages
-            )
+            html.reply("help.html", supported_languages=html.supported_languages)
         )
 
-    def change_language(self, update, context) -> None:
+    @_setup_callback
+    def change_language(
+        self, update, context, html: HTMLReplies = HTMLReplies()
+    ) -> None:
+        """Change default language of the chat (/language)."""
         chat_id = update.effective_chat.id
-        self._set_html_reply_lang(chat_id)
-
         if update.effective_chat.type == "group":
             if not utils.user_is_adm(update, context):
-                update.message.reply_html(
-                    self.html_replies.reply("not_authorized.html")
-                )
+                update.message.reply_html(html.reply("not_authorized.html"))
                 return
 
         if not context.args:
-            # set language to default when no args are passed by the user
-            default_language = self.html_replies.default_lang
-            self.html_replies.set_language(default_language)
+            # set language to default (EN) when no args are passed by the user
+            default_language = html.default_lang
+            html.set_language(default_language)
             self.mongodb.set_chat_language(chat_id, default_language)
-
-            update.message.reply_html(
-                self.html_replies.reply("change_lang_success.html")
-            )
+            update.message.reply_html(html.reply("change_lang_success.html"))
             return
 
         user_lang = "".join(context.args).upper()
-        if self.html_replies.set_language(user_lang):
+        if html.set_language(user_lang):
             self.mongodb.set_chat_language(chat_id, user_lang)
-            update.message.reply_html(
-                self.html_replies.reply("change_lang_success.html")
-            )
+            update.message.reply_html(html.reply("change_lang_success.html"))
         else:
             update.message.reply_html(
-                self.html_replies.reply("change_lang_error.html", user_lang=user_lang)
+                html.reply("change_lang_error.html", user_lang=user_lang)
             )
 
-    def change_default_pool(self, update, context) -> None:
-        chat_id = update.effective_chat.id
-        self._set_html_reply_lang(chat_id)
+    @_setup_callback
+    def change_default_pool(
+        self, update, context, html: HTMLReplies = HTMLReplies()
+    ) -> None:
+        """Change default pool of the chat (/setpool)."""
 
         if update.effective_chat.type == "group":
             if not utils.user_is_adm(update, context):
-                update.message.reply_html(
-                    self.html_replies.reply("not_authorized.html")
-                )
+                update.message.reply_html(html.reply("not_authorized.html"))
                 return
 
         chat_id = update.effective_chat.id
         if not context.args:
             # if there are no args, change default pool to `EBS`
-            default_pool = "EBS"
+            default_pool = "pool1ndtsklata6rphamr6jw2p3ltnzayq3pezhg0djvn7n5js8rqlzh"
             self.mongodb.set_default_pool(chat_id, default_pool)
-            update.message.reply_html(
-                # TODO: modify template to pass pool ticker as argument
-                self.html_replies.reply("change_default_pool_success.html")
-            )
+            update.message.reply_html(html.reply("change_default_pool_success.html"))
             return
 
-        user_pool = "".join(context.args).upper()
+        user_pool = "".join(context.args)
         self.mongodb.set_default_pool(chat_id, user_pool)
-        update.message.reply_html(
-            self.html_replies.reply("change_default_pool_success.html")
-        )
+        update.message.reply_html(html.reply("change_default_pool_success.html"))
 
     @_setup_callback
-    def epoch_info(self, update, context) -> None:
+    def epoch_info(self, update, context, html: HTMLReplies = HTMLReplies()) -> None:
         """Get information about the current epoch (/epoch)."""
-        endpoint = "epoch"
+        endpoint = "epoch/"
         url = os.path.join(self.base_url, endpoint)
         r = requests.get(url, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
@@ -143,49 +126,11 @@ class CardaBotCallbacks:
             "n_active_stake_pools": data.get("n_active_stake_pools"),
             "remaining_time": utils.fmt_time(
                 timedelta(seconds=data.get("remaning_time")),
-                self.html_replies.reply("days.html"),
+                html.reply("days.html"),
             ),
         }
 
-        update.message.reply_html(
-            self.html_replies.reply("epoch_info.html", **template_args)
-        )
-
-    # OLD IMPLEMENTATION OF EPOCH_INFO BELOW (NOT USED, BUT KEPT FOR REFERENCE)
-    # @_setup_callback
-    # def epoch_info(self, update, context) -> None:
-    #     """Get information about the current epoch (/epoch)."""
-    #     currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
-    #     var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
-    #     epochInfo = self.gql.caller("epochInfo.graphql", var).get("data")
-
-    #     started_at = datetime.fromisoformat(
-    #         # [:-1] to remove the final "Z" from timestamp
-    #         epochInfo["epochs"][0]["startedAt"][:-1]
-    #     )
-    #     remaining_time = started_at + timedelta(days=5) - datetime.utcnow()
-
-    #     total_slots_epoch = 432000
-    #     perc = currentEpochTip["cardano"]["tip"]["slotInEpoch"] / total_slots_epoch
-
-    #     # fmt: off
-    #     template_args = {
-    #         "progress_bar": utils.get_progress_bar(perc * 100),
-    #         "perc": perc * 100,
-    #         "current_epoch": currentEpochTip["cardano"]["currentEpoch"]["number"],
-    #         "current_slot": currentEpochTip["cardano"]["tip"]["slotNo"],
-    #         "slot_in_epoch": currentEpochTip["cardano"]["tip"]["slotInEpoch"],
-    #         "txs_in_epoch": epochInfo["epochs"][0]["transactionsCount"],
-    #         "fees_in_epoch": utils.fmt_ada(utils.lovelace_to_ada(int(epochInfo["epochs"][0]["fees"]))),
-    #         "active_stake": utils.fmt_ada(utils.lovelace_to_ada(int(epochInfo["epochs"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]))),
-    #         "n_active_stake_pools": epochInfo["stakePools_aggregate"]["aggregate"]["count"],
-    #         "remaining_time": utils.fmt_time(remaining_time, self.html_replies.reply("days.html")),
-    #     }
-    #     # fmt: on
-
-    #     update.message.reply_html(
-    #         self.html_replies.reply("epoch_info.html", **template_args)
-    #     )
+        update.message.reply_html(html.reply("epoch_info.html", **template_args))
 
     def ebs(self, update, context) -> None:
         update.message.reply_text(
@@ -220,14 +165,13 @@ class CardaBotCallbacks:
             ),
         )
 
-    def start(self, update, context):
-        self._set_html_reply_lang(update.effective_chat.id)
-
-        update.message.reply_html(self.html_replies.reply("welcome.html"))
+    @_setup_callback
+    def start(self, update, context, html: HTMLReplies = HTMLReplies()) -> None:
+        update.message.reply_html(html.reply("welcome.html"))
         self.help(update, context)
 
     @_setup_callback
-    def pool_info(self, update, context):
+    def pool_info(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Get pool basic info (/pool)."""
         currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
 
@@ -290,12 +234,10 @@ class CardaBotCallbacks:
         }
         # fmt: on
 
-        update.message.reply_html(
-            self.html_replies.reply("pool_info.html", **template_args)
-        )
+        update.message.reply_html(html.reply("pool_info.html", **template_args))
 
     @_setup_callback
-    def pots(self, update, context):
+    def pots(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Get info about cardano pots (/pots)."""
         currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
         var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
@@ -322,10 +264,10 @@ class CardaBotCallbacks:
             ),
         }
 
-        update.message.reply_html(self.html_replies.reply("pots.html", **template_args))
+        update.message.reply_html(html.reply("pots.html", **template_args))
 
     @_setup_callback
-    def netparams(self, update, context):
+    def netparams(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Get network parameters (/netparams)."""
         currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
         var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
@@ -344,9 +286,7 @@ class CardaBotCallbacks:
             "tau": netParams["protocolParams"]["tau"],
         }
 
-        update.message.reply_html(
-            self.html_replies.reply("netparams.html", **template_args)
-        )
+        update.message.reply_html(html.reply("netparams.html", **template_args))
 
     def tip(self, update, context):
         message = context.bot.send_message(
@@ -387,7 +327,7 @@ class CardaBotCallbacks:
         return ""
 
     @_setup_callback
-    def netstats(self, update, context):
+    def netstats(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Get network statistics (/netstats)."""
         currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
 
@@ -424,6 +364,4 @@ class CardaBotCallbacks:
             "load_24h": block_size_avg_24h / max_block_size * 100,
         }
 
-        update.message.reply_html(
-            self.html_replies.reply("netstats.html", **template_args)
-        )
+        update.message.reply_html(html.reply("netstats.html", **template_args))

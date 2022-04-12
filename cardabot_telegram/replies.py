@@ -11,8 +11,12 @@ class HTMLReplies:
     )
 
     def __init__(self) -> None:
-        self.default_lang = "EN"
         self.language = self.default_lang
+
+    @property
+    def default_lang(self) -> str:
+        """Return default language."""
+        return "EN"
 
     def set_language(self, lang: str) -> bool:
         """Set preferred language.
