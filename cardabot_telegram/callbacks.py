@@ -22,6 +22,7 @@ class CardaBotCallbacks:
         self.mongodb = mongodb
         self.html_replies = html_replies
         self.gql = graphql_client
+        self.base_url = os.environ.get("CARDABOT_API_URL")
 
     def _set_html_reply_lang(self, chat_id: int):
         """Set HTML template language to current chat language."""
@@ -35,17 +36,14 @@ class CardaBotCallbacks:
         )
 
     def _setup_callback(func):
-        """Decorator to setup callback configs and handle specific exceptions."""
+        """Decorator to setup callback configs and handle exceptions."""
 
         def callback(self, update, context):
             try:
                 chat_id = update.effective_chat.id
-                self._set_html_reply_lang(chat_id)
+                self._set_html_reply_lang(chat_id)  # set HTML template language
                 func(self, update, context)
 
-            # invalid GraphQL responses can cause KeyErrors, TypeErros, AttributeErrors,
-            # and HTTPErrors depending on how you make the call or try to access the
-            # response dictionary
             except Exception as e:
                 self._inform_error(context, chat_id)
                 logging.exception(e)
@@ -127,37 +125,67 @@ class CardaBotCallbacks:
     @_setup_callback
     def epoch_info(self, update, context) -> None:
         """Get information about the current epoch (/epoch)."""
-        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
-        var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
-        epochInfo = self.gql.caller("epochInfo.graphql", var).get("data")
+        endpoint = "epoch"
+        url = os.path.join(self.base_url, endpoint)
+        r = requests.get(url, params={"currency_format": "ADA"})
+        r.raise_for_status()  # captured by the _setup_callback decorator
+        data = r.json().get("data", None)
 
-        started_at = datetime.fromisoformat(
-            # [:-1] to remove the final "Z" from timestamp
-            epochInfo["epochs"][0]["startedAt"][:-1]
-        )
-        remaining_time = started_at + timedelta(days=5) - datetime.utcnow()
-
-        total_slots_epoch = 432000
-        perc = currentEpochTip["cardano"]["tip"]["slotInEpoch"] / total_slots_epoch
-
-        # fmt: off
         template_args = {
-            "progress_bar": utils.get_progress_bar(perc * 100),
-            "perc": perc * 100,
-            "current_epoch": currentEpochTip["cardano"]["currentEpoch"]["number"],
-            "current_slot": currentEpochTip["cardano"]["tip"]["slotNo"],
-            "slot_in_epoch": currentEpochTip["cardano"]["tip"]["slotInEpoch"],
-            "txs_in_epoch": epochInfo["epochs"][0]["transactionsCount"],
-            "fees_in_epoch": utils.fmt_ada(utils.lovelace_to_ada(int(epochInfo["epochs"][0]["fees"]))),
-            "active_stake": utils.fmt_ada(utils.lovelace_to_ada(int(epochInfo["epochs"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]))),
-            "n_active_stake_pools": epochInfo["stakePools_aggregate"]["aggregate"]["count"],
-            "remaining_time": utils.fmt_time(remaining_time, self.html_replies.reply("days.html")),
+            "progress_bar": utils.get_progress_bar(data.get("percentage")),
+            "perc": data.get("percentage"),
+            "current_epoch": data.get("current_epoch"),
+            "current_slot": data.get("current_slot"),
+            "slot_in_epoch": data.get("slot_in_epoch"),
+            "txs_in_epoch": data.get("txs_in_epoch"),
+            "fees_in_epoch": utils.fmt_ada(data.get("fees_in_epoch")),
+            "active_stake": utils.fmt_ada(data.get("active_stake")),
+            "n_active_stake_pools": data.get("n_active_stake_pools"),
+            "remaining_time": utils.fmt_time(
+                timedelta(seconds=data.get("remaning_time")),
+                self.html_replies.reply("days.html"),
+            ),
         }
-        # fmt: on
 
         update.message.reply_html(
             self.html_replies.reply("epoch_info.html", **template_args)
         )
+
+    # OLD IMPLEMENTATION OF EPOCH_INFO BELOW (NOT USED, BUT KEPT FOR REFERENCE)
+    # @_setup_callback
+    # def epoch_info(self, update, context) -> None:
+    #     """Get information about the current epoch (/epoch)."""
+    #     currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
+    #     var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
+    #     epochInfo = self.gql.caller("epochInfo.graphql", var).get("data")
+
+    #     started_at = datetime.fromisoformat(
+    #         # [:-1] to remove the final "Z" from timestamp
+    #         epochInfo["epochs"][0]["startedAt"][:-1]
+    #     )
+    #     remaining_time = started_at + timedelta(days=5) - datetime.utcnow()
+
+    #     total_slots_epoch = 432000
+    #     perc = currentEpochTip["cardano"]["tip"]["slotInEpoch"] / total_slots_epoch
+
+    #     # fmt: off
+    #     template_args = {
+    #         "progress_bar": utils.get_progress_bar(perc * 100),
+    #         "perc": perc * 100,
+    #         "current_epoch": currentEpochTip["cardano"]["currentEpoch"]["number"],
+    #         "current_slot": currentEpochTip["cardano"]["tip"]["slotNo"],
+    #         "slot_in_epoch": currentEpochTip["cardano"]["tip"]["slotInEpoch"],
+    #         "txs_in_epoch": epochInfo["epochs"][0]["transactionsCount"],
+    #         "fees_in_epoch": utils.fmt_ada(utils.lovelace_to_ada(int(epochInfo["epochs"][0]["fees"]))),
+    #         "active_stake": utils.fmt_ada(utils.lovelace_to_ada(int(epochInfo["epochs"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]))),
+    #         "n_active_stake_pools": epochInfo["stakePools_aggregate"]["aggregate"]["count"],
+    #         "remaining_time": utils.fmt_time(remaining_time, self.html_replies.reply("days.html")),
+    #     }
+    #     # fmt: on
+
+    #     update.message.reply_html(
+    #         self.html_replies.reply("epoch_info.html", **template_args)
+    #     )
 
     def ebs(self, update, context) -> None:
         update.message.reply_text(
@@ -386,7 +414,9 @@ class CardaBotCallbacks:
         block_size_avg_24h = netstats["blocks_avg_24h"]["aggregate"]["avg"]["size"]
 
         template_args = {
-            "ada_in_circulation": utils.fmt_ada(utils.lovelace_to_ada(int(ada_circulation_total))),
+            "ada_in_circulation": utils.fmt_ada(
+                utils.lovelace_to_ada(int(ada_circulation_total))
+            ),
             "percentage_in_stake": staked_perc,
             "stakepools": netstats["stakePools_aggregate"]["aggregate"]["count"],
             "delegations": netstats["delegations_aggregate"]["aggregate"]["count"],
