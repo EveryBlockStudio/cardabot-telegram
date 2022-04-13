@@ -128,7 +128,7 @@ class CardaBotCallbacks:
             "active_stake": utils.fmt_ada(data.get("active_stake")),
             "n_active_stake_pools": data.get("n_active_stake_pools"),
             "remaining_time": utils.fmt_time(
-                timedelta(seconds=data.get("remaning_time")),
+                timedelta(seconds=data.get("remaining_time")),
                 html.reply("days.html"),
             ),
         }
