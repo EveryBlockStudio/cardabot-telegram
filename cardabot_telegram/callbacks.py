@@ -1,5 +1,3 @@
-from ctypes.wintypes import HENHMETAFILE
-from curses.ascii import HT
 import os
 from datetime import datetime, timedelta
 import time
@@ -23,6 +21,7 @@ class CardaBotCallbacks:
         self.mongodb = mongodb
         self.gql = graphql_client
         self.base_url = os.environ.get("CARDABOT_API_URL")
+        self.ebs_pool = "pool1ndtsklata6rphamr6jw2p3ltnzayq3pezhg0djvn7n5js8rqlzh"
 
     def _inform_error(self, context, chat_id):
         context.bot.send_message(
@@ -53,6 +52,11 @@ class CardaBotCallbacks:
         update.message.reply_html(
             html.reply("help.html", supported_languages=html.supported_languages)
         )
+
+    @_setup_callback
+    def start(self, update, context, html: HTMLReplies = HTMLReplies()) -> None:
+        update.message.reply_html(html.reply("welcome.html"))
+        self.help(update, context)
 
     @_setup_callback
     def change_language(
@@ -96,8 +100,7 @@ class CardaBotCallbacks:
         chat_id = update.effective_chat.id
         if not context.args:
             # if there are no args, change default pool to `EBS`
-            default_pool = "pool1ndtsklata6rphamr6jw2p3ltnzayq3pezhg0djvn7n5js8rqlzh"
-            self.mongodb.set_default_pool(chat_id, default_pool)
+            self.mongodb.set_default_pool(chat_id, self.ebs_pool)
             update.message.reply_html(html.reply("change_default_pool_success.html"))
             return
 
@@ -131,44 +134,6 @@ class CardaBotCallbacks:
         }
 
         update.message.reply_html(html.reply("epoch_info.html", **template_args))
-
-    def ebs(self, update, context) -> None:
-        update.message.reply_text(
-            "🔔 Follow us on social media!",
-            #
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="✨ Twitter ✨", url="https://twitter.com/EveryBlockStd"
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="✨ Instagram ✨",
-                            url="https://instagram.com/EveryBlockStudio",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="✨ LinkedIn ✨",
-                            url="https://www.linkedin.com/company/everyblock-studio/",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="✨ Telegram ✨",
-                            url="https://t.me/EveryBlockStudio",
-                        )
-                    ],
-                ]
-            ),
-        )
-
-    @_setup_callback
-    def start(self, update, context, html: HTMLReplies = HTMLReplies()) -> None:
-        update.message.reply_html(html.reply("welcome.html"))
-        self.help(update, context)
 
     @_setup_callback
     def pool_info(self, update, context, html: HTMLReplies = HTMLReplies()):
@@ -288,44 +253,6 @@ class CardaBotCallbacks:
 
         update.message.reply_html(html.reply("netparams.html", **template_args))
 
-    def tip(self, update, context):
-        message = context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="⬇️ Click the button below to sign your transaction using Nami wallet:",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="🔑 Sign Tx",
-                            url="https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="📖 Learn more",
-                            url="https://instagram.com/EveryBlockStudio",
-                        )
-                    ],
-                ]
-            ),
-        )
-        time.sleep(10)
-        message.edit_text(
-            text="✅ Your transaction was submitted!",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="Check Tx on CardanoScan",
-                            url="https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d",
-                        )
-                    ],
-                ]
-            ),
-        )
-
-        return ""
-
     @_setup_callback
     def netstats(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Get network statistics (/netstats)."""
@@ -365,3 +292,74 @@ class CardaBotCallbacks:
         }
 
         update.message.reply_html(html.reply("netstats.html", **template_args))
+
+    def ebs(self, update, context) -> None:
+        update.message.reply_text(
+            "🔔 Follow us on social media!",
+            #
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="✨ Twitter ✨", url="https://twitter.com/EveryBlockStd"
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="✨ Instagram ✨",
+                            url="https://instagram.com/EveryBlockStudio",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="✨ LinkedIn ✨",
+                            url="https://www.linkedin.com/company/everyblock-studio/",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="✨ Telegram ✨",
+                            url="https://t.me/EveryBlockStudio",
+                        )
+                    ],
+                ]
+            ),
+        )
+
+    def tip(self, update, context):
+        message = context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="⬇️ Click the button below to sign your transaction using Nami wallet:",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="🔑 Sign Tx",
+                            url="https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="📖 Learn more",
+                            url="https://instagram.com/EveryBlockStudio",
+                        )
+                    ],
+                ]
+            ),
+        )
+        time.sleep(10)
+        message.edit_text(
+            text="✅ Your transaction was submitted!",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="Check Tx on CardanoScan",
+                            url="https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d",
+                        )
+                    ],
+                ]
+            ),
+        )
+
+        return ""
