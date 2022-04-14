@@ -138,12 +138,6 @@ class CardaBotCallbacks:
     @_setup_callback
     def pool_info(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Get pool basic info (/pool)."""
-        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
-
-        var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
-        activeStake = self.gql.caller("epochActiveStakeNOpt.graphql", var).get("data")
-        adaSupply = self.gql.caller("adaSupply.graphql").get("data")
-
         # get stake_id
         if context.args:
             stake_id = str("".join(context.args))
@@ -151,51 +145,34 @@ class CardaBotCallbacks:
             chat_id = update.effective_chat.id
             stake_id = self.mongodb.get_chat_default_pool(chat_id)
 
-        var = {
-            "pool": stake_id,
-            "epoch": currentEpochTip["cardano"]["currentEpoch"]["number"],
-        }
-        # !TODO: treat in case stake_id is not valid
-        stakePoolDetails = self.gql.caller("stakePoolDetails.graphql", var).get("data")
-
-        # get pool metadata
-        url = stakePoolDetails["stakePools"][0]["url"]
-
-        metadata = {}
-        res = requests.get(url)
-        if res.json():
-            metadata = res.json()
+        endpoint = f"pool/{stake_id}"
+        url = os.path.join(self.base_url, endpoint)
+        r = requests.get(url, params={"currency_format": "ADA"})
 
         # fmt: off
-        stake = stakePoolDetails["stakePools"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]
-        total_stake = activeStake["epochs"][0]["activeStake_aggregate"]["aggregate"]["sum"]["amount"]
-        # fmt: on
+        if r.status_code == 404:
+            template_args = {"ticker": stake_id}
+            update.message.reply_html(html.reply("pool_info_error.html", **template_args))
+            return
 
-        controlled_stake_perc = (int(stake) / int(total_stake)) * 100
-        circ_supply = adaSupply["ada"]["supply"]["circulating"]
-        n_opt = activeStake["epochs"][0]["protocolParams"]["nOpt"]
+        data = r.json().get("data", None)
 
-        saturation = utils.calc_pool_saturation(
-            int(stake), int(circ_supply), int(n_opt)
-        )
-
-        # fmt: off
         template_args = {
-            "ticker": metadata.get("ticker", "NOT FOUND."),
-            "name": metadata.get("name", "NOT FOUND."),
-            "description": metadata.get("description", "NOT FOUND."),
-            "homepage": metadata.get("homepage", "NOT FOUND."),
-            "pool_id": stakePoolDetails["stakePools"][0]["id"],
-            "pledge": utils.fmt_ada(utils.lovelace_to_ada(int(stakePoolDetails["stakePools"][0]["pledge"]))),
-            "fixed_cost": utils.fmt_ada(utils.lovelace_to_ada(int(stakePoolDetails["stakePools"][0]["fixedCost"]))),
-            "margin": stakePoolDetails["stakePools"][0]["margin"] * 100,
-            "saturation": saturation * 100,  # !TODO: fix
-            "saturation_symbol": utils.get_saturation_icon(saturation),  # !TODO: fix
-            "controlled_stake_perc": controlled_stake_perc,  # !TODO: fix
-            "active_stake_amount": utils.fmt_ada(utils.lovelace_to_ada(int(stake))),  # !TODO: fix
-            "delegators_count": stakePoolDetails["stakePools"][0]["delegators_aggregate"]["aggregate"]["count"],
-            "epoch_blocks_count": stakePoolDetails["blocksThisEpoch"][0]["blocks_aggregate"]["aggregate"]["count"],
-            "lifetime_blocks_count": stakePoolDetails["lifetimeBlocks"][0]["blocks_aggregate"]["aggregate"]["count"],
+            "ticker": data.get("ticker"),
+            "name": data.get("name"),
+            "description": data.get("description"),
+            "homepage": data.get("homepage"),
+            "pool_id": data.get("pool_id"),
+            "pledge": utils.fmt_ada(data.get("pledge")),
+            "fixed_cost": utils.fmt_ada(data.get("fixed_cost")),
+            "margin": data.get("margin"),
+            "saturation": data.get("saturation"),  # !TODO: fix
+            "saturation_symbol": utils.get_saturation_icon(data.get("saturation")),  # !TODO: fix
+            "controlled_stake_perc": data.get("controlled_stake_percentage"),  # !TODO: fix
+            "active_stake_amount": utils.fmt_ada(data.get("active_stake_amount")),  # !TODO: fix
+            "delegators_count": data.get("delegators_count"),
+            "epoch_blocks_count": data.get("epoch_blocks_count"),
+            "lifetime_blocks_count": data.get("lifetime_blocks_count"),
         }
         # fmt: on
 
