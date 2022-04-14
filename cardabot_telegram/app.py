@@ -16,7 +16,7 @@ if __name__ == "__main__":
     )
 
     cbs = CardaBotCallbacks(
-        mongodb=MongoDatabase(os.environ.get("CONN_STR")),
+        # mongodb=MongoDatabase(os.environ.get("CONN_STR")),
         # html_replies=HTMLReplies(),
         graphql_client=GraphQLClient(os.environ.get("GRAPHQL_URL")),
     )

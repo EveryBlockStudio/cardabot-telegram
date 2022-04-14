@@ -6,7 +6,6 @@ import logging
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
 
-from . import mongodb
 from . import database
 from . import utils
 from .replies import HTMLReplies
@@ -16,10 +15,10 @@ from . import graphql_client
 class CardaBotCallbacks:
     def __init__(
         self,
-        mongodb: mongodb.MongoDatabase,
+        # mongodb: mongodb.MongoDatabase,
         graphql_client: graphql_client.GraphQLClient,
     ) -> None:
-        self.mongodb = mongodb
+        # self.mongodb = mongodb
         self.gql = graphql_client
         self.base_url = os.environ.get("CARDABOT_API_URL")
         self.cardabotdb = database.CardabotDB(self.base_url)
@@ -37,7 +36,7 @@ class CardaBotCallbacks:
         def callback(self, update, context):
             try:
                 chat_id = update.effective_chat.id
-                language = self.mongodb.get_chat_language(chat_id)
+                language = self.cardabotdb.get_chat_language(chat_id)
                 html = HTMLReplies()
                 html.set_language(language)
                 func(self, update, context, html)
@@ -102,12 +101,12 @@ class CardaBotCallbacks:
         chat_id = update.effective_chat.id
         if not context.args:
             # if there are no args, change default pool to `EBS`
-            self.mongodb.set_default_pool(chat_id, self.ebs_pool)
+            self.cardabotdb.set_default_pool(chat_id, self.ebs_pool)
             update.message.reply_html(html.reply("change_default_pool_success.html"))
             return
 
         user_pool = "".join(context.args)
-        self.mongodb.set_default_pool(chat_id, user_pool)
+        self.cardabotdb.set_default_pool(chat_id, user_pool)
         update.message.reply_html(html.reply("change_default_pool_success.html"))
 
     @_setup_callback
