@@ -15,10 +15,8 @@ from . import graphql_client
 class CardaBotCallbacks:
     def __init__(
         self,
-        # mongodb: mongodb.MongoDatabase,
         graphql_client: graphql_client.GraphQLClient,
     ) -> None:
-        # self.mongodb = mongodb
         self.gql = graphql_client
         self.base_url = os.environ.get("CARDABOT_API_URL")
         self.cardabotdb = database.CardabotDB(self.base_url)

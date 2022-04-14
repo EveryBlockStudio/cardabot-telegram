@@ -6,7 +6,6 @@ from telegram.ext import Updater, CommandHandler
 
 from .callbacks import CardaBotCallbacks
 from .replies import HTMLReplies
-from .mongodb import MongoDatabase
 from .graphql_client import GraphQLClient
 
 
@@ -17,7 +16,6 @@ if __name__ == "__main__":
     )
 
     cbs = CardaBotCallbacks(
-        # mongodb=MongoDatabase(os.environ.get("CONN_STR")),
         # html_replies=HTMLReplies(),
         graphql_client=GraphQLClient(os.environ.get("GRAPHQL_URL")),
     )
@@ -42,14 +40,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--prod", help="Run in production mode", action="store_true")
     args = parser.parse_known_args()
-    
-    if args[0].prod: 
+
+    if args[0].prod:
         # start bot with webhook (use in production)
         updater.start_webhook(
-            listen="0.0.0.0", 
-            port=int(os.environ.get("PORT")), 
-            url_path=os.environ.get("BOT_TOKEN"))
-        updater.bot.setWebhook(os.environ.get("APP_DOMAIN") + os.environ.get("BOT_TOKEN"))
+            listen="0.0.0.0",
+            port=int(os.environ.get("PORT")),
+            url_path=os.environ.get("BOT_TOKEN"),
+        )
+        updater.bot.setWebhook(
+            os.environ.get("APP_DOMAIN") + os.environ.get("BOT_TOKEN")
+        )
     else:
         # start bot with pooling (use when running local)
         updater.start_polling()
