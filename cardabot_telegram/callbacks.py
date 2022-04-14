@@ -224,21 +224,19 @@ class CardaBotCallbacks:
     @_setup_callback
     def netparams(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Get network parameters (/netparams)."""
-        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
-        var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
-        netParams = self.gql.caller("netParams.graphql", var).get("data")["epochs"][0]
+        endpoint = "netparams/"
+        url = os.path.join(self.base_url, endpoint)
+        r = requests.get(url, params={"currency_format": "ADA"})
+        r.raise_for_status()  # captured by the _setup_callback decorator
+        data = r.json().get("data", None)
 
         template_args = {
-            "a0": netParams["protocolParams"]["a0"],
-            "min_pool_cost": utils.fmt_ada(
-                utils.lovelace_to_ada(int(netParams["protocolParams"]["minPoolCost"]))
-            ),
-            "min_utxo_value": utils.lovelace_to_ada(
-                int(netParams["protocolParams"]["minUTxOValue"])
-            ),
-            "n_opt": netParams["protocolParams"]["nOpt"],
-            "rho": netParams["protocolParams"]["rho"],
-            "tau": netParams["protocolParams"]["tau"],
+            "a0": data.get("a0"),
+            "min_pool_cost": utils.fmt_ada(data.get("min_pool_cost")),
+            "min_utxo_value": data.get("min_utxo_value"),
+            "n_opt": data.get("n_opt"),
+            "rho": data.get("rho"),
+            "tau": data.get("tau"),
         }
 
         update.message.reply_html(html.reply("netparams.html", **template_args))
