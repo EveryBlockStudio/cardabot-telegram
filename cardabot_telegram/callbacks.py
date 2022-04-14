@@ -9,15 +9,10 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
 from . import database
 from . import utils
 from .replies import HTMLReplies
-from . import graphql_client
 
 
 class CardaBotCallbacks:
-    def __init__(
-        self,
-        graphql_client: graphql_client.GraphQLClient,
-    ) -> None:
-        self.gql = graphql_client
+    def __init__(self) -> None:
         self.base_url = os.environ.get("CARDABOT_API_URL")
         self.cardabotdb = database.CardabotDB(self.base_url)
         self.ebs_pool = "pool1ndtsklata6rphamr6jw2p3ltnzayq3pezhg0djvn7n5js8rqlzh"

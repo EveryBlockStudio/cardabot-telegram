@@ -1,9 +1,0 @@
-query adaSupply {
-  ada {
-    supply {
-      total
-      circulating
-      max
-    }
-  }
-}

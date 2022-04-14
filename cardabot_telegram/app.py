@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 from telegram.ext import Updater, CommandHandler
 
 from .callbacks import CardaBotCallbacks
-from .replies import HTMLReplies
-from .graphql_client import GraphQLClient
 
 
 if __name__ == "__main__":
@@ -15,10 +13,7 @@ if __name__ == "__main__":
         format="%(asctime)s - %(name)s - %(levelname)s %(message)s", level=logging.INFO
     )
 
-    cbs = CardaBotCallbacks(
-        # html_replies=HTMLReplies(),
-        graphql_client=GraphQLClient(os.environ.get("GRAPHQL_URL")),
-    )
+    cbs = CardaBotCallbacks()
 
     # telegram bot handlers
     updater = Updater(os.environ.get("BOT_TOKEN"), use_context=True)
