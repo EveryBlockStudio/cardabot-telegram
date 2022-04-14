@@ -258,14 +258,12 @@ class CardaBotCallbacks:
         """Get network statistics (/netstats)."""
         endpoint = "netstats/"
         url = os.path.join(self.base_url, endpoint)
-        r = requests.get(url)
+        r = requests.get(url, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 
         template_args = {
-            "ada_in_circulation": utils.fmt_ada(
-                utils.lovelace_to_ada(int(data.get("ada_in_circulation")))
-            ),
+            "ada_in_circulation": utils.fmt_ada(data.get("ada_in_circulation")),
             "percentage_in_stake": data.get("percentage_in_stake"),
             "stakepools": data.get("stakepools"),
             "delegations": data.get("delegations"),
