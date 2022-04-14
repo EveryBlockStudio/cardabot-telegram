@@ -204,29 +204,19 @@ class CardaBotCallbacks:
     @_setup_callback
     def pots(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Get info about cardano pots (/pots)."""
-        currentEpochTip = self.gql.caller("currentEpochTip.graphql").get("data")
-        var = {"epoch": currentEpochTip["cardano"]["currentEpoch"]["number"]}
-        adaPot = self.gql.caller("adaPot.graphql", var).get("data")["epochs"][0]
+        endpoint = "pots/"
+        url = os.path.join(self.base_url, endpoint)
+        r = requests.get(url, params={"currency_format": "ADA"})
+        r.raise_for_status()  # captured by the _setup_callback decorator
+        data = r.json().get("data", None)
 
         template_args = {
-            "treasury": utils.fmt_ada(
-                utils.lovelace_to_ada(int(adaPot["adaPots"]["treasury"]))
-            ),
-            "reserves": utils.fmt_ada(
-                utils.lovelace_to_ada(int(adaPot["adaPots"]["reserves"]))
-            ),
-            "fees": utils.fmt_ada(
-                utils.lovelace_to_ada(int(adaPot["adaPots"]["fees"]))
-            ),
-            "rewards": utils.fmt_ada(
-                utils.lovelace_to_ada(int(adaPot["adaPots"]["rewards"]))
-            ),
-            "utxo": utils.fmt_ada(
-                utils.lovelace_to_ada(int(adaPot["adaPots"]["utxo"]))
-            ),
-            "deposits": utils.fmt_ada(
-                utils.lovelace_to_ada(int(adaPot["adaPots"]["deposits"]))
-            ),
+            "treasury": utils.fmt_ada(data.get("treasury")),
+            "reserves": utils.fmt_ada(data.get("reserves")),
+            "fees": utils.fmt_ada(data.get("fees")),
+            "rewards": utils.fmt_ada(data.get("rewards")),
+            "utxo": utils.fmt_ada(data.get("utxo")),
+            "deposits": utils.fmt_ada(data.get("deposits")),
         }
 
         update.message.reply_html(html.reply("pots.html", **template_args))
