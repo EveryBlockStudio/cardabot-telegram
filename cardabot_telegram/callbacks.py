@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 import time
 import logging
 
@@ -7,6 +7,7 @@ import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
 
 from . import mongodb
+from . import database
 from . import utils
 from .replies import HTMLReplies
 from . import graphql_client
@@ -21,6 +22,7 @@ class CardaBotCallbacks:
         self.mongodb = mongodb
         self.gql = graphql_client
         self.base_url = os.environ.get("CARDABOT_API_URL")
+        self.cardabotdb = database.CardabotDB(self.base_url)
         self.ebs_pool = "pool1ndtsklata6rphamr6jw2p3ltnzayq3pezhg0djvn7n5js8rqlzh"
 
     def _inform_error(self, context, chat_id):
@@ -73,13 +75,13 @@ class CardaBotCallbacks:
             # set language to default (EN) when no args are passed by the user
             default_language = html.default_lang
             html.set_language(default_language)
-            self.mongodb.set_chat_language(chat_id, default_language)
+            self.cardabotdb.set_chat_language(chat_id, default_language)
             update.message.reply_html(html.reply("change_lang_success.html"))
             return
 
         user_lang = "".join(context.args).upper()
         if html.set_language(user_lang):
-            self.mongodb.set_chat_language(chat_id, user_lang)
+            self.cardabotdb.set_chat_language(chat_id, user_lang)
             update.message.reply_html(html.reply("change_lang_success.html"))
         else:
             update.message.reply_html(
@@ -143,7 +145,7 @@ class CardaBotCallbacks:
             stake_id = str("".join(context.args))
         else:
             chat_id = update.effective_chat.id
-            stake_id = self.mongodb.get_chat_default_pool(chat_id)
+            stake_id = self.cardabotdb.get_chat_default_pool(chat_id)
 
         endpoint = f"pool/{stake_id}"
         url = os.path.join(self.base_url, endpoint)
