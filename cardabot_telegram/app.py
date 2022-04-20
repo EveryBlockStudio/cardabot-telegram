@@ -42,10 +42,8 @@ if __name__ == "__main__":
             listen="0.0.0.0",
             port=int(os.environ.get("PORT")),
             url_path=os.environ.get("BOT_TOKEN"),
-        )
-        updater.bot.setWebhook(
-            os.environ.get("APP_DOMAIN") + os.environ.get("BOT_TOKEN")
-        )
+            webhook_url=os.environ.get("APP_DOMAIN") + os.environ.get("BOT_TOKEN"),
+            )
     else:
         # start bot with pooling (use when running local)
         updater.start_polling()
