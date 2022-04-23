@@ -107,7 +107,8 @@ class CardaBotCallbacks:
         """Get information about the current epoch (/epoch)."""
         endpoint = "epoch/"
         url = os.path.join(self.base_url, endpoint)
-        r = requests.get(url, params={"currency_format": "ADA"})
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 
@@ -141,7 +142,8 @@ class CardaBotCallbacks:
 
         endpoint = f"pool/{stake_id}"
         url = os.path.join(self.base_url, endpoint)
-        r = requests.get(url, params={"currency_format": "ADA"})
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
 
         # fmt: off
         if r.status_code == 404:
@@ -177,7 +179,8 @@ class CardaBotCallbacks:
         """Get info about cardano pots (/pots)."""
         endpoint = "pots/"
         url = os.path.join(self.base_url, endpoint)
-        r = requests.get(url, params={"currency_format": "ADA"})
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 
@@ -197,7 +200,8 @@ class CardaBotCallbacks:
         """Get network parameters (/netparams)."""
         endpoint = "netparams/"
         url = os.path.join(self.base_url, endpoint)
-        r = requests.get(url, params={"currency_format": "ADA"})
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 
@@ -217,7 +221,8 @@ class CardaBotCallbacks:
         """Get network statistics (/netstats)."""
         endpoint = "netstats/"
         url = os.path.join(self.base_url, endpoint)
-        r = requests.get(url, params={"currency_format": "ADA"})
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 

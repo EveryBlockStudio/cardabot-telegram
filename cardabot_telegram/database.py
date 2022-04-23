@@ -16,7 +16,8 @@ class CardabotDB:
             "client": "TELEGRAM",
         }
         url = os.path.join(self.base_url, "chats/")
-        r = requests.post(url, json=data)
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.post(url, headers=headers, json=data)
         r.raise_for_status()
         return r.json()
 
@@ -27,7 +28,10 @@ class CardabotDB:
         """
         endpoint = f"chats/{chat_id}/"
         url = os.path.join(self.base_url, endpoint)
-        r = requests.get(url, params={"client_filter": "TELEGRAM"})
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.get(url, headers=headers, params={"client_filter": "TELEGRAM"})
+
+        #print(r.text)
 
         if r.status_code == 404 and "not found" in r.json()["detail"].lower():
             return self.create_chat(chat_id)
@@ -51,7 +55,8 @@ class CardabotDB:
         endpoint = f"chats/{chat_id}/"
         url = os.path.join(self.base_url, endpoint)
         data = {"default_language": lang}
-        r = requests.patch(url, json=data, params={"client_filter": "TELEGRAM"})
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.patch(url, json=data, headers=headers, params={"client_filter": "TELEGRAM"})
         r.raise_for_status()
 
     def set_default_pool(self, chat_id: int, pool: str) -> None:
@@ -62,5 +67,6 @@ class CardabotDB:
         endpoint = f"chats/{chat_id}/"
         url = os.path.join(self.base_url, endpoint)
         data = {"default_pool_id": pool}
-        r = requests.patch(url, json=data, params={"client_filter": "TELEGRAM"})
+        headers = {'Authorization': 'Token ' + os.environ.get("CARDABOT_API_TOKEN")}
+        r = requests.patch(url, json=data, headers=headers, params={"client_filter": "TELEGRAM"})
         r.raise_for_status()
