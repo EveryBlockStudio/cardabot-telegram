@@ -231,6 +231,7 @@ class CardaBotCallbacks:
             "percentage_in_stake": data.get("percentage_in_stake"),
             "stakepools": data.get("stakepools"),
             "delegations": data.get("delegations"),
+            "load_15m": data.get("load_15m"),
             "load_1h": data.get("load_1h"),
             "load_24h": data.get("load_24h"),
         }
