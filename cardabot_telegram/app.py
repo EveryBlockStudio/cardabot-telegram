@@ -19,17 +19,21 @@ if __name__ == "__main__":
     updater = Updater(os.environ.get("BOT_TOKEN"), use_context=True)
     dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler("start", cbs.start))
-    dispatcher.add_handler(CommandHandler("pool", cbs.pool_info))
-    dispatcher.add_handler(CommandHandler("language", cbs.change_language))
-    dispatcher.add_handler(CommandHandler("setpool", cbs.change_default_pool))
-    dispatcher.add_handler(CommandHandler("help", cbs.help))
-    dispatcher.add_handler(CommandHandler("ebs", cbs.ebs))
+    dispatcher.add_handler(CommandHandler("start", cbs.start, run_async=True))
+    dispatcher.add_handler(CommandHandler("pool", cbs.pool_info, run_async=True))
+    dispatcher.add_handler(
+        CommandHandler("language", cbs.change_language, run_async=True)
+    )
+    dispatcher.add_handler(
+        CommandHandler("setpool", cbs.change_default_pool, run_async=True)
+    )
+    dispatcher.add_handler(CommandHandler("help", cbs.help, run_async=True))
+    dispatcher.add_handler(CommandHandler("ebs", cbs.ebs, run_async=True))
     # dispatcher.add_handler(CommandHandler("tip", cbs.tip))
-    dispatcher.add_handler(CommandHandler("epoch", cbs.epoch_info))
-    dispatcher.add_handler(CommandHandler("pots", cbs.pots))
-    dispatcher.add_handler(CommandHandler("netparams", cbs.netparams))
-    dispatcher.add_handler(CommandHandler("netstats", cbs.netstats))
+    dispatcher.add_handler(CommandHandler("epoch", cbs.epoch_info, run_async=True))
+    dispatcher.add_handler(CommandHandler("pots", cbs.pots, run_async=True))
+    dispatcher.add_handler(CommandHandler("netparams", cbs.netparams, run_async=True))
+    dispatcher.add_handler(CommandHandler("netstats", cbs.netstats, run_async=True))
 
     # parse command line arguments and start the bot accordingly
     parser = argparse.ArgumentParser()
