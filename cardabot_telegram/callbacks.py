@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 import time
 import logging
+import asyncio
 
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
@@ -16,6 +17,9 @@ class CardaBotCallbacks:
         self.base_url = os.environ.get("CARDABOT_API_URL")
         self.cardabotdb = database.CardabotDB(self.base_url)
         self.ebs_pool = "pool1ndtsklata6rphamr6jw2p3ltnzayq3pezhg0djvn7n5js8rqlzh"
+        self.headers = {
+            "Authorization": "Token " + os.environ.get("CARDABOT_API_TOKEN")
+        }
 
     def _inform_error(self, context, chat_id):
         context.bot.send_message(
@@ -107,8 +111,7 @@ class CardaBotCallbacks:
         """Get information about the current epoch (/epoch)."""
         endpoint = "epoch/"
         url = os.path.join(self.base_url, endpoint)
-        headers = {"Authorization": "Token " + os.environ.get("CARDABOT_API_TOKEN")}
-        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
+        r = requests.get(url, headers=self.headers, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 
@@ -140,10 +143,11 @@ class CardaBotCallbacks:
             chat_id = update.effective_chat.id
             stake_id = self.cardabotdb.get_chat_default_pool(chat_id)
 
+        update.message.reply_text("⌛ Fetching pool info, please wait...")
+
         endpoint = f"pool/{stake_id}"
         url = os.path.join(self.base_url, endpoint)
-        headers = {"Authorization": "Token " + os.environ.get("CARDABOT_API_TOKEN")}
-        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
+        r = requests.get(url, headers=self.headers, params={"currency_format": "ADA"})
 
         # fmt: off
         if r.status_code == 404:
@@ -179,8 +183,7 @@ class CardaBotCallbacks:
         """Get info about cardano pots (/pots)."""
         endpoint = "pots/"
         url = os.path.join(self.base_url, endpoint)
-        headers = {"Authorization": "Token " + os.environ.get("CARDABOT_API_TOKEN")}
-        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
+        r = requests.get(url, headers=self.headers, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 
@@ -200,8 +203,7 @@ class CardaBotCallbacks:
         """Get network parameters (/netparams)."""
         endpoint = "netparams/"
         url = os.path.join(self.base_url, endpoint)
-        headers = {"Authorization": "Token " + os.environ.get("CARDABOT_API_TOKEN")}
-        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
+        r = requests.get(url, headers=self.headers, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 
@@ -221,8 +223,7 @@ class CardaBotCallbacks:
         """Get network statistics (/netstats)."""
         endpoint = "netstats/"
         url = os.path.join(self.base_url, endpoint)
-        headers = {"Authorization": "Token " + os.environ.get("CARDABOT_API_TOKEN")}
-        r = requests.get(url, headers=headers, params={"currency_format": "ADA"})
+        r = requests.get(url, headers=self.headers, params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         data = r.json().get("data", None)
 
