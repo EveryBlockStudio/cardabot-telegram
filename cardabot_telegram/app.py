@@ -34,6 +34,7 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("pots", cbs.pots, run_async=True))
     dispatcher.add_handler(CommandHandler("netparams", cbs.netparams, run_async=True))
     dispatcher.add_handler(CommandHandler("netstats", cbs.netstats, run_async=True))
+    dispatcher.add_handler(CommandHandler("connect", cbs.connect, run_async=True))
 
     # parse command line arguments and start the bot accordingly
     parser = argparse.ArgumentParser()

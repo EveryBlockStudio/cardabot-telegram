@@ -239,6 +239,44 @@ class CardaBotCallbacks:
 
         update.message.reply_html(html.reply("netstats.html", **template_args))
 
+    @_setup_callback
+    def connect(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Connect user wallet """
+        chat_id = update.effective_chat.id
+        
+        ## Get token from chat_id
+        endpoint = f"chats/{chat_id}/token/"
+        url = os.path.join(self.base_url, endpoint)  
+        r = requests.get(url, headers=self.headers)#, params={"currency_format": "ADA"})
+        r.raise_for_status()  # captured by the _setup_callback decorator
+        tmp_token = r.json().get("tmp_token", None)
+        
+        ## Create unique URL for user
+        cardabot_url = self.base_url.replace("api/","")
+        connect_url_link = f"{cardabot_url}connect?token={tmp_token}"
+
+        message = context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f"⬇️ Click the button below to connect your web wallet to CardaBot, so you can starting tipping",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="🔗 Connect Wallet",
+                            url=connect_url_link,
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="📖 Learn more",
+                            url="https://instagram.com/EveryBlockStudio",
+                        )
+                    ],
+                ]
+            ),
+        )
+
+
     def ebs(self, update, context) -> None:
         update.message.reply_text(
             "🔔 Follow us on social media!",
