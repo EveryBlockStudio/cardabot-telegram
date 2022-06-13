@@ -1,14 +1,13 @@
-import os
-from datetime import timedelta
-import time
-import logging
 import asyncio
+import logging
+import os
+import time
+from datetime import timedelta
 
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
 
-from . import database
-from . import utils
+from . import database, utils
 from .replies import HTMLReplies
 
 
@@ -241,18 +240,25 @@ class CardaBotCallbacks:
 
     @_setup_callback
     def connect(self, update, context, html: HTMLReplies = HTMLReplies()):
-        """Connect user wallet """
+        """Connect user wallet"""
         chat_id = update.effective_chat.id
-        
+
+        # only allow private chats
+        if update.effective_chat.type != "private":
+            update.message.reply_html(html.reply("connection_refused.html"))
+            return
+
         ## Get token from chat_id
         endpoint = f"chats/{chat_id}/token/"
-        url = os.path.join(self.base_url, endpoint)  
-        r = requests.get(url, headers=self.headers)#, params={"currency_format": "ADA"})
+        url = os.path.join(self.base_url, endpoint)
+        r = requests.get(
+            url, headers=self.headers
+        )  # , params={"currency_format": "ADA"})
         r.raise_for_status()  # captured by the _setup_callback decorator
         tmp_token = r.json().get("tmp_token", None)
-        
+
         ## Create unique URL for user
-        cardabot_url = self.base_url.replace("api/","")
+        cardabot_url = self.base_url.replace("api/", "")
         connect_url_link = f"{cardabot_url}connect?token={tmp_token}"
 
         message = context.bot.send_message(
@@ -275,7 +281,6 @@ class CardaBotCallbacks:
                 ]
             ),
         )
-
 
     def ebs(self, update, context) -> None:
         update.message.reply_text(
