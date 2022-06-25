@@ -29,7 +29,7 @@ if __name__ == "__main__":
     )
     dispatcher.add_handler(CommandHandler("help", cbs.help, run_async=True))
     dispatcher.add_handler(CommandHandler("ebs", cbs.ebs, run_async=True))
-    # dispatcher.add_handler(CommandHandler("tip", cbs.tip))
+    dispatcher.add_handler(CommandHandler("tip", cbs.tip))
     dispatcher.add_handler(CommandHandler("epoch", cbs.epoch_info, run_async=True))
     dispatcher.add_handler(CommandHandler("pots", cbs.pots, run_async=True))
     dispatcher.add_handler(CommandHandler("netparams", cbs.netparams, run_async=True))
