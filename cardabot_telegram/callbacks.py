@@ -316,26 +316,64 @@ class CardaBotCallbacks:
         )
 
     def tip(self, update, context):
-        message = context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="⬇️ Click the button below to sign your transaction using Nami wallet:",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="🔑 Sign Tx",
-                            url="https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="📖 Learn more",
-                            url="https://instagram.com/EveryBlockStudio",
-                        )
-                    ],
-                ]
-            ),
-        )
+        # get data for building tx
+        data = {
+            "chat_id_sender": update.message.from_user.id,
+            "chat_id_receiver": update.message.reply_to_message.from_user.id,
+            "username_receiver": update.message.reply_to_message.from_user.username,
+            "amount": update.message.text.split(" ")[-1],
+            "client": "TELEGRAM",
+        }
+
+        # call cardabot-api to build the tx (get tx_id)
+        endpoint = f"unsignedtx/"
+        url = os.path.join(self.base_url, endpoint)
+        r = requests.post(
+            url, 
+            headers=self.headers, 
+            data=data)
+        #
+
+        # verify the tx response
+        if r.status_code == 201:
+            tx_id = r.json().get("tx_id", None)
+            if tx_id:
+                # create a link to sign the tx
+                cardabot_url = self.base_url.replace("api/", "")
+                pay_url_link = f"{cardabot_url}pay?tx_id={tx_id}"
+
+                # create message with a button to send the tx
+                message = context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="⬇️ Click the button below to sign your transaction using your web wallet:",
+                    reply_markup=InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton(
+                                    text="🔑 Sign Tx",
+                                    url=pay_url_link,
+                                )
+                            ],
+                            [
+                                InlineKeyboardButton(
+                                    text="📖 Learn more",
+                                    url="https://instagram.com/EveryBlockStudio",
+                                )
+                            ],
+                        ]
+                    ),
+                )
+            else:
+                update.message.reply_text("💰 Tip failed!\n\n")
+        elif r.status_code == 406:
+            print(r)
+            #print(r.detail)
+            message = update.message.reply_text(r.json().get("detail", None))
+            r.raise_for_status()  # captured by the _setup_callback decorator
+        else:
+            r.raise_for_status() 
+
+        # TODO:schedule a task to check the tx status
         time.sleep(10)
         message.edit_text(
             text="✅ Your transaction was submitted!",
