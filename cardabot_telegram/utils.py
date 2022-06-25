@@ -1,9 +1,13 @@
-from collections import OrderedDict
+import datetime
+import glob
+import logging
 import os
 import subprocess
-import glob
-from cachetools import cached, TTLCache
-import datetime
+from collections import OrderedDict
+
+import requests
+from cachetools import TTLCache, cached
+from telegram.error import BadRequest
 
 
 def bech32_to_hex(pool_bech32):
@@ -113,3 +117,13 @@ def user_is_adm(update, context):
     return update.effective_user.id in get_admin_ids(
         context.bot, update.message.chat_id
     )
+
+
+def send_to_all(bot, chat_ids: list[str], text: str):
+    """Send a message to several chats."""
+
+    for chat_id in chat_ids:
+        try:
+            bot.send_message(chat_id=chat_id, text=text)
+        except BadRequest as e:
+            logging.debug(f"Invalid chat_id: {chat_id} ({repr(e)})")

@@ -1,11 +1,11 @@
-import asyncio
 import logging
 import os
 import time
 from datetime import timedelta
 
 import requests
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.error import BadRequest
 
 from . import database, utils
 from .replies import HTMLReplies
@@ -352,3 +352,26 @@ class CardaBotCallbacks:
         )
 
         return ""
+
+    @_setup_callback
+    def alert(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Send a message to all users."""
+        sender_chat_id = os.environ.get("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != sender_chat_id:
+            update.message.reply_html(html.reply("endpoint_refused.html"))
+            return
+
+        r = requests.get(
+            os.path.join(self.base_url, "chats/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        r.raise_for_status()
+
+        chat_ids = [
+            chat.get("chat_id") for chat in r.json() if int(chat.get("chat_id")) > 0
+        ]  # exclude telegram group chats
+
+        message = update.message.text.split(" ", 1)[1]
+
+        utils.send_to_all(bot=context.bot, chat_ids=chat_ids, text=message)

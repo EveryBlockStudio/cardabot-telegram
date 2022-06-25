@@ -1,11 +1,11 @@
+import argparse
 import logging
 import os
-import argparse
+
 from dotenv import load_dotenv
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import CommandHandler, Updater
 
 from .callbacks import CardaBotCallbacks
-
 
 if __name__ == "__main__":
     load_dotenv(override=True)
@@ -35,6 +35,7 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("netparams", cbs.netparams, run_async=True))
     dispatcher.add_handler(CommandHandler("netstats", cbs.netstats, run_async=True))
     dispatcher.add_handler(CommandHandler("connect", cbs.connect, run_async=True))
+    dispatcher.add_handler(CommandHandler("alert", cbs.alert, run_async=True))
 
     # parse command line arguments and start the bot accordingly
     parser = argparse.ArgumentParser()
