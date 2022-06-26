@@ -1,13 +1,17 @@
-import datetime
 import glob
 import logging
 import os
 import subprocess
 from collections import OrderedDict
+from datetime import timedelta
 
 import requests
 from cachetools import TTLCache, cached
 from telegram.error import BadRequest
+
+from . import database
+
+cardabot_db = database.CardabotDB(url=os.environ.get("CARDABOT_API_URL"))
 
 
 def bech32_to_hex(pool_bech32):
@@ -70,7 +74,7 @@ def get_progress_bar(percentage: float) -> str:
     return pbar.get(tens * 10, "[▱▱▱▱▱▱▱▱▱▱]")
 
 
-def fmt_time(remaning_time: datetime.timedelta, days_text: str) -> str:
+def fmt_time(remaning_time: timedelta, days_text: str) -> str:
     """Format a timedelta object to string in multiple languages."""
     hours, remainder = divmod(remaning_time.seconds, 3600)
     minutes, _ = divmod(remainder, 60)
@@ -119,11 +123,34 @@ def user_is_adm(update, context):
     )
 
 
-def send_to_all(bot, chat_ids: list[str], text: str):
-    """Send a message to several chats."""
+def send_to_all(bot, chat_ids: list[str], text: str, parse_mode="Markdown"):
+    """Send a message to several chats.
 
+    Ignore invalid chat IDs.
+
+    Args:
+        bot: Telegram bot instance.
+        chat_ids: List of chat IDs.
+        text: Message text.
+
+    """
     for chat_id in chat_ids:
         try:
-            bot.send_message(chat_id=chat_id, text=text)
+            bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
         except BadRequest as e:
             logging.debug(f"Invalid chat_id: {chat_id} ({repr(e)})")
+
+
+def get_epoch_duration() -> int:
+    """Return epoch length in seconds."""
+    return 432000
+
+
+def get_epoch_remaning_time() -> int:
+    """Return epoch remaning time in seconds."""
+    res = requests.get(
+        os.path.join(cardabot_db.base_url, "epoch/"), headers=cardabot_db.headers
+    )
+    res.raise_for_status()
+
+    return int(res.json().get("data").get("remaining_time"))

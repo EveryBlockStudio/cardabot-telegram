@@ -5,7 +5,6 @@ from datetime import timedelta
 
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.error import BadRequest
 
 from . import database, utils
 from .replies import HTMLReplies
@@ -328,10 +327,7 @@ class CardaBotCallbacks:
         # call cardabot-api to build the tx (get tx_id)
         endpoint = f"unsignedtx/"
         url = os.path.join(self.base_url, endpoint)
-        r = requests.post(
-            url, 
-            headers=self.headers, 
-            data=data)
+        r = requests.post(url, headers=self.headers, data=data)
         #
 
         # verify the tx response
@@ -367,11 +363,11 @@ class CardaBotCallbacks:
                 update.message.reply_text("💰 Tip failed!\n\n")
         elif r.status_code == 406:
             print(r)
-            #print(r.detail)
+            # print(r.detail)
             message = update.message.reply_text(r.json().get("detail", None))
             r.raise_for_status()  # captured by the _setup_callback decorator
         else:
-            r.raise_for_status() 
+            r.raise_for_status()
 
         # TODO:schedule a task to check the tx status
         time.sleep(10)
@@ -391,14 +387,8 @@ class CardaBotCallbacks:
 
         return ""
 
-    @_setup_callback
-    def alert(self, update, context, html: HTMLReplies = HTMLReplies()):
-        """Send a message to all users."""
-        sender_chat_id = os.environ.get("ADMIN_CHAT_ID")
-        if str(update.effective_user.id) != sender_chat_id:
-            update.message.reply_html(html.reply("endpoint_refused.html"))
-            return
-
+    def _get_all_cardabot_chats(self) -> list[str]:
+        """Get all cardabot chats from database, excluding groups."""
         r = requests.get(
             os.path.join(self.base_url, "chats/"),
             headers=self.headers,
@@ -410,6 +400,24 @@ class CardaBotCallbacks:
             chat.get("chat_id") for chat in r.json() if int(chat.get("chat_id")) > 0
         ]  # exclude telegram group chats
 
+        return chat_ids
+
+    @_setup_callback
+    def alert(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Send a message to all users."""
+        sender_chat_id = os.environ.get("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != sender_chat_id:
+            update.message.reply_html(html.reply("endpoint_refused.html"))
+            return
+
         message = update.message.text.split(" ", 1)[1]
+        chat_ids = self._get_all_cardabot_chats()
 
         utils.send_to_all(bot=context.bot, chat_ids=chat_ids, text=message)
+
+    def end_of_epoch_task(self, bot) -> None:
+        """Send of epoch summary to all users."""
+        html = HTMLReplies()
+        message = html.reply("end_of_epoch_summary.html", epoch=299)
+        chat_ids = self._get_all_cardabot_chats()
+        utils.send_to_all(bot=bot, chat_ids=chat_ids, text=message, parse_mode="HTML")
