@@ -3,7 +3,6 @@ import logging
 import os
 from datetime import datetime, timedelta
 
-from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from telegram.ext import CommandHandler, Updater
 
@@ -24,8 +23,8 @@ if __name__ == "__main__":
 
     # schedule recurring jobs
     start_date = datetime.now() + timedelta(seconds=utils.get_epoch_remaning_time())
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(
+    # scheduler = BackgroundScheduler()
+    utils.Scheduler.queue.add_job(
         cbs.end_of_epoch_task,
         "interval",
         seconds=utils.get_epoch_duration(),
@@ -33,7 +32,7 @@ if __name__ == "__main__":
         args=[updater.bot],
         id="end_of_epoch_task",
     )
-    scheduler.start()
+    # utils.Scheduler.queue.start()  # start scheduler
 
     # telegram bot commands
     disp.add_handler(CommandHandler("start", cbs.start, run_async=True))

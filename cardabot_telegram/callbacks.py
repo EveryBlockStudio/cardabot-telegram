@@ -1,7 +1,8 @@
 import logging
 import os
+import secrets
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -237,6 +238,20 @@ class CardaBotCallbacks:
 
         update.message.reply_html(html.reply("netstats.html", **template_args))
 
+    def _get_cardabot_user_id(self, chat_id: str | int) -> int:
+        """Return the cardabor user id for the given chat_id.
+
+        If chat is not connected, return None.
+        """
+        res = requests.get(
+            os.path.join(self.base_url, f"chats/{chat_id}/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        res.raise_for_status()
+
+        return res.json().get("cardabot_user_id", None)
+
     @_setup_callback
     def connect(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Connect user wallet"""
@@ -248,11 +263,11 @@ class CardaBotCallbacks:
             return
 
         ## Get token from chat_id
-        endpoint = f"chats/{chat_id}/token/"
-        url = os.path.join(self.base_url, endpoint)
         r = requests.get(
-            url, headers=self.headers
-        )  # , params={"currency_format": "ADA"})
+            os.path.join(self.base_url, f"chats/{chat_id}/token/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
         r.raise_for_status()  # captured by the _setup_callback decorator
         tmp_token = r.json().get("tmp_token", None)
 
@@ -261,7 +276,7 @@ class CardaBotCallbacks:
         connect_url_link = f"{cardabot_url}connect?token={tmp_token}"
 
         message = context.bot.send_message(
-            chat_id=update.effective_chat.id,
+            chat_id=chat_id,
             text=f"⬇️ Click the button below to connect your web wallet to CardaBot, so you can starting tipping",
             reply_markup=InlineKeyboardMarkup(
                 [
@@ -279,6 +294,28 @@ class CardaBotCallbacks:
                     ],
                 ]
             ),
+        )
+
+        # task to run for a couple of minutes or until the user connects his wallet
+        def update_message(message, cardabot_user, chat_id, job_id):
+            cardabot_user_id = self._get_cardabot_user_id(chat_id)
+            if cardabot_user != cardabot_user_id:
+                message.edit_text(
+                    html.reply("connection_success.html"), parse_mode="HTML"
+                )
+                utils.Scheduler.queue.remove_job(job_id)
+
+        start_date = datetime.now() + timedelta(seconds=20)
+        end_date = start_date + timedelta(seconds=420)
+        job_id = secrets.token_urlsafe(6)  # generate tmp id for the job
+        utils.Scheduler.queue.add_job(  # add job to scheduler
+            update_message,
+            "interval",
+            seconds=10,
+            start_date=start_date,
+            end_date=end_date,
+            args=[message, self._get_cardabot_user_id(chat_id), chat_id, job_id],
+            id=job_id,
         )
 
     def ebs(self, update, context) -> None:

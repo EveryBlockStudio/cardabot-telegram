@@ -1,17 +1,24 @@
 import glob
 import logging
 import os
+import queue
 import subprocess
 from collections import OrderedDict
 from datetime import timedelta
 
 import requests
+from apscheduler.schedulers.background import BackgroundScheduler
 from cachetools import TTLCache, cached
 from telegram.error import BadRequest
 
 from . import database
 
 cardabot_db = database.CardabotDB(url=os.environ.get("CARDABOT_API_URL"))
+
+
+class Scheduler:
+    queue = BackgroundScheduler()
+    queue.start()  # start scheduler
 
 
 def bech32_to_hex(pool_bech32):
