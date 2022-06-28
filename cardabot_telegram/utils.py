@@ -1,7 +1,6 @@
 import glob
 import logging
 import os
-import queue
 import subprocess
 from collections import OrderedDict
 from datetime import timedelta

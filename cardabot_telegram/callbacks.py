@@ -306,7 +306,7 @@ class CardaBotCallbacks:
                 utils.Scheduler.queue.remove_job(job_id)
 
         start_date = datetime.now() + timedelta(seconds=20)
-        end_date = start_date + timedelta(seconds=420)
+        end_date = start_date + timedelta(seconds=7 * 60)
         job_id = secrets.token_urlsafe(6)  # generate tmp id for the job
         utils.Scheduler.queue.add_job(  # add job to scheduler
             update_message,
