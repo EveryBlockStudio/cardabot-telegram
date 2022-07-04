@@ -351,7 +351,14 @@ class CardaBotCallbacks:
             ),
         )
 
-    def tip(self, update, context):
+    @_setup_callback
+    def tip(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Tip a user"""
+        if update.message.reply_to_message is None:
+            # only allow tip if msg is a response to a user
+            update.message.reply_html(html.reply("tip_refused.html"))
+            return
+
         # get data for building tx
         data = {
             "chat_id_sender": update.message.from_user.id,
@@ -362,67 +369,93 @@ class CardaBotCallbacks:
         }
 
         # call cardabot-api to build the tx (get tx_id)
-        endpoint = f"unsignedtx/"
-        url = os.path.join(self.base_url, endpoint)
-        r = requests.post(url, headers=self.headers, data=data)
-        #
+        r = requests.post(
+            os.path.join(self.base_url, "unsignedtx/"), headers=self.headers, data=data
+        )
 
         # verify the tx response
-        if r.status_code == 201:
-            tx_id = r.json().get("tx_id", None)
-            if tx_id:
-                # create a link to sign the tx
-                cardabot_url = self.base_url.replace("api/", "")
-                pay_url_link = f"{cardabot_url}pay?tx_id={tx_id}"
-
-                # create message with a button to send the tx
-                message = context.bot.send_message(
-                    chat_id=update.effective_chat.id,
-                    text="⬇️ Click the button below to sign your transaction using your web wallet:",
-                    reply_markup=InlineKeyboardMarkup(
-                        [
-                            [
-                                InlineKeyboardButton(
-                                    text="🔑 Sign Tx",
-                                    url=pay_url_link,
-                                )
-                            ],
-                            [
-                                InlineKeyboardButton(
-                                    text="📖 Learn more",
-                                    url="https://instagram.com/EveryBlockStudio",
-                                )
-                            ],
-                        ]
-                    ),
-                )
-            else:
-                update.message.reply_text("💰 Tip failed!\n\n")
-        elif r.status_code == 406:
-            print(r)
-            # print(r.detail)
+        if r.status_code >= 400:
             message = update.message.reply_text(r.json().get("detail", None))
-            r.raise_for_status()  # captured by the _setup_callback decorator
-        else:
-            r.raise_for_status()
+            return
 
-        # TODO:schedule a task to check the tx status
-        time.sleep(10)
-        message.edit_text(
-            text="✅ Your transaction was submitted!",
+        if r.status_code != 201:
+            update.message.reply_text("💰 Tip failed!\n\n")
+            return
+
+        tx_id = r.json().get("tx_id")
+        # create a link to sign the tx
+        cardabot_url = self.base_url.replace("api/", "")
+        pay_url_link = f"{cardabot_url}pay?tx_id={tx_id}"
+
+        # create message with a button to send the tx
+        message = context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="⬇️ Click the button below to sign your transaction using your web wallet:",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            text="Check Tx on CardanoScan",
-                            url="https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d",
+                            text="🔑 Sign Tx",
+                            url=pay_url_link,
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="📖 Learn more",
+                            url="https://instagram.com/EveryBlockStudio",
                         )
                     ],
                 ]
             ),
         )
 
-        return ""
+        # task to run for a couple of minutes or until the tx is submitted to network
+        def update_message(message, tx_id, network, job_id, end_date):
+            r = requests.get(
+                os.path.join(self.base_url, f"checktx/{tx_id}/"),
+                headers=self.headers,
+            )
+
+            if r.status_code != 200:
+                if datetime.now() > end_date - timedelta(seconds=30):
+                    message.edit_text(
+                        text=html.reply("tip_fail.html"), parse_mode="HTML"
+                    )
+                    utils.Scheduler.queue.remove_job(job_id)
+                return
+
+            net = network + "." if network == "testnet" else ""
+            message.edit_text(
+                text="✅ Your transaction was submitted!",
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(
+                                text="Check Tx on CardanoScan",
+                                url=f"https://{net}cardanoscan.io/transaction/{tx_id}",
+                            )
+                        ],
+                    ]
+                ),
+            )
+            utils.Scheduler.queue.remove_job(job_id)
+
+        network = os.environ.get("NETWORK", "mainnet").lower()
+        if network not in ("mainnet", "testnet"):
+            raise ValueError("Invalid network environment variable!")
+
+        start_date = datetime.now() + timedelta(seconds=1)
+        end_date = start_date + timedelta(seconds=600)
+        job_id = secrets.token_urlsafe(6)  # generate tmp id for the job
+        utils.Scheduler.queue.add_job(  # add job to scheduler
+            update_message,
+            "interval",
+            seconds=30,
+            start_date=start_date,
+            end_date=end_date,
+            args=[message, tx_id, network, job_id, end_date],
+            id=job_id,
+        )
 
     def _get_all_cardabot_chats(self) -> list[str]:
         """Get all cardabot chats from database, excluding groups."""
