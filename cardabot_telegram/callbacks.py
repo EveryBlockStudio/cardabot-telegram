@@ -1,14 +1,13 @@
-import os
-from datetime import timedelta
-import time
 import logging
-import asyncio
+import os
+import secrets
+import time
+from datetime import datetime, timedelta
 
 import requests
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, chat
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from . import database
-from . import utils
+from . import database, utils
 from .replies import HTMLReplies
 
 
@@ -239,6 +238,86 @@ class CardaBotCallbacks:
 
         update.message.reply_html(html.reply("netstats.html", **template_args))
 
+    def _get_cardabot_user_id(self, chat_id: str | int) -> int:
+        """Return the cardabor user id for the given chat_id.
+
+        If chat is not connected, return None.
+        """
+        res = requests.get(
+            os.path.join(self.base_url, f"chats/{chat_id}/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        res.raise_for_status()
+
+        return res.json().get("cardabot_user_id", None)
+
+    @_setup_callback
+    def connect(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Connect user wallet"""
+        chat_id = update.effective_chat.id
+
+        # only allow private chats
+        if update.effective_chat.type != "private":
+            update.message.reply_html(html.reply("connection_refused.html"))
+            return
+
+        ## Get token from chat_id
+        r = requests.get(
+            os.path.join(self.base_url, f"chats/{chat_id}/token/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        r.raise_for_status()  # captured by the _setup_callback decorator
+        tmp_token = r.json().get("tmp_token", None)
+
+        ## Create unique URL for user
+        cardabot_url = self.base_url.replace("api/", "")
+        connect_url_link = f"{cardabot_url}connect?token={tmp_token}"
+
+        message = context.bot.send_message(
+            chat_id=chat_id,
+            text=f"⬇️ Click the button below to connect your web wallet to CardaBot, so you can starting tipping",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="🔗 Connect Wallet",
+                            url=connect_url_link,
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="📖 Learn more",
+                            url="https://instagram.com/EveryBlockStudio",
+                        )
+                    ],
+                ]
+            ),
+        )
+
+        # task to run for a couple of minutes or until the user connects his wallet
+        def update_message(message, cardabot_user, chat_id, job_id):
+            cardabot_user_id = self._get_cardabot_user_id(chat_id)
+            if cardabot_user != cardabot_user_id:
+                message.edit_text(
+                    html.reply("connection_success.html"), parse_mode="HTML"
+                )
+                utils.Scheduler.queue.remove_job(job_id)
+
+        start_date = datetime.now() + timedelta(seconds=20)
+        end_date = start_date + timedelta(seconds=7 * 60)
+        job_id = secrets.token_urlsafe(6)  # generate tmp id for the job
+        utils.Scheduler.queue.add_job(  # add job to scheduler
+            update_message,
+            "interval",
+            seconds=10,
+            start_date=start_date,
+            end_date=end_date,
+            args=[message, self._get_cardabot_user_id(chat_id), chat_id, job_id],
+            id=job_id,
+        )
+
     def ebs(self, update, context) -> None:
         update.message.reply_text(
             "🔔 Follow us on social media!",
@@ -272,16 +351,52 @@ class CardaBotCallbacks:
             ),
         )
 
-    def tip(self, update, context):
+    @_setup_callback
+    def tip(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Tip a user"""
+        if update.message.reply_to_message is None:
+            # only allow tip if msg is a response to a user
+            update.message.reply_html(html.reply("tip_refused.html"))
+            return
+
+        # get data for building tx
+        data = {
+            "chat_id_sender": update.message.from_user.id,
+            "chat_id_receiver": update.message.reply_to_message.from_user.id,
+            "username_receiver": update.message.reply_to_message.from_user.username,
+            "amount": update.message.text.split(" ")[-1],
+            "client": "TELEGRAM",
+        }
+
+        # call cardabot-api to build the tx (get tx_id)
+        r = requests.post(
+            os.path.join(self.base_url, "unsignedtx/"), headers=self.headers, data=data
+        )
+
+        # verify the tx response
+        if r.status_code >= 400:
+            message = update.message.reply_text(r.json().get("detail", None))
+            return
+
+        if r.status_code != 201:
+            update.message.reply_text("💰 Tip failed!\n\n")
+            return
+
+        tx_id = r.json().get("tx_id")
+        # create a link to sign the tx
+        cardabot_url = self.base_url.replace("api/", "")
+        pay_url_link = f"{cardabot_url}pay?tx_id={tx_id}"
+
+        # create message with a button to send the tx
         message = context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="⬇️ Click the button below to sign your transaction using Nami wallet:",
+            text="⬇️ Click the button below to sign your transaction using your web wallet:",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
                             text="🔑 Sign Tx",
-                            url="https://www.figma.com/proto/RBHzvMaK7XrasZ6Vv0JOwM/Untitled?node-id=0%3A3&scaling=scale-down&page-id=0%3A1&hide-ui=1",
+                            url=pay_url_link,
                         )
                     ],
                     [
@@ -293,19 +408,86 @@ class CardaBotCallbacks:
                 ]
             ),
         )
-        time.sleep(10)
-        message.edit_text(
-            text="✅ Your transaction was submitted!",
-            reply_markup=InlineKeyboardMarkup(
-                [
+
+        # task to run for a couple of minutes or until the tx is submitted to network
+        def update_message(message, tx_id, network, job_id, end_date):
+            r = requests.get(
+                os.path.join(self.base_url, f"checktx/{tx_id}/"),
+                headers=self.headers,
+            )
+
+            if r.status_code != 200:
+                if datetime.now() > end_date - timedelta(seconds=30):
+                    message.edit_text(
+                        text=html.reply("tip_fail.html"), parse_mode="HTML"
+                    )
+                    utils.Scheduler.queue.remove_job(job_id)
+                return
+
+            net = network + "." if network == "testnet" else ""
+            message.edit_text(
+                text="✅ Your transaction was submitted!",
+                reply_markup=InlineKeyboardMarkup(
                     [
-                        InlineKeyboardButton(
-                            text="Check Tx on CardanoScan",
-                            url="https://cardanoscan.io/transaction/5ce7e1af847acadb7f954cd15db267566427020648b9cae9e9ffcc23d920808d",
-                        )
-                    ],
-                ]
-            ),
+                        [
+                            InlineKeyboardButton(
+                                text="Check Tx on CardanoScan",
+                                url=f"https://{net}cardanoscan.io/transaction/{tx_id}",
+                            )
+                        ],
+                    ]
+                ),
+            )
+            utils.Scheduler.queue.remove_job(job_id)
+
+        network = os.environ.get("NETWORK", "mainnet").lower()
+        if network not in ("mainnet", "testnet"):
+            raise ValueError("Invalid network environment variable!")
+
+        start_date = datetime.now() + timedelta(seconds=1)
+        end_date = start_date + timedelta(seconds=600)
+        job_id = secrets.token_urlsafe(6)  # generate tmp id for the job
+        utils.Scheduler.queue.add_job(  # add job to scheduler
+            update_message,
+            "interval",
+            seconds=30,
+            start_date=start_date,
+            end_date=end_date,
+            args=[message, tx_id, network, job_id, end_date],
+            id=job_id,
         )
 
-        return ""
+    def _get_all_cardabot_chats(self) -> list[str]:
+        """Get all cardabot chats from database, excluding groups."""
+        r = requests.get(
+            os.path.join(self.base_url, "chats/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        r.raise_for_status()
+
+        chat_ids = [
+            chat.get("chat_id") for chat in r.json() if int(chat.get("chat_id")) > 0
+        ]  # exclude telegram group chats
+
+        return chat_ids
+
+    @_setup_callback
+    def alert(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Send a message to all users."""
+        sender_chat_id = os.environ.get("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != sender_chat_id:
+            update.message.reply_html(html.reply("endpoint_refused.html"))
+            return
+
+        message = update.message.text.split(" ", 1)[1]
+        chat_ids = self._get_all_cardabot_chats()
+
+        utils.send_to_all(bot=context.bot, chat_ids=chat_ids, text=message)
+
+    def end_of_epoch_task(self, bot) -> None:
+        """Send of epoch summary to all users."""
+        html = HTMLReplies()
+        message = html.reply("end_of_epoch_summary.html", epoch=299)
+        chat_ids = self._get_all_cardabot_chats()
+        utils.send_to_all(bot=bot, chat_ids=chat_ids, text=message, parse_mode="HTML")
