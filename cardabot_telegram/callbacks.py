@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import secrets
 import time
 from datetime import datetime, timedelta
@@ -359,12 +360,18 @@ class CardaBotCallbacks:
             update.message.reply_html(html.reply("tip_refused.html"))
             return
 
+        txt = update.message.text.split()
+        lbound = utils.min_ada()
+        if not (len(txt) == 2 and utils.isnumber(txt[1]) and float(txt[1]) > lbound):
+            update.message.reply_html(html.reply("tip_refused.html"))
+            return
+
         # get data for building tx
         data = {
             "chat_id_sender": update.message.from_user.id,
             "chat_id_receiver": update.message.reply_to_message.from_user.id,
             "username_receiver": update.message.reply_to_message.from_user.username,
-            "amount": update.message.text.split(" ")[-1],
+            "amount": float(txt[1]),
             "client": "TELEGRAM",
         }
 
@@ -375,7 +382,9 @@ class CardaBotCallbacks:
 
         # verify the tx response
         if r.status_code >= 400:
-            message = update.message.reply_text(r.json().get("detail", None))
+            message = update.message.reply_text(
+                r.json().get("detail", None)
+            )  # TODO: improve this, should be an html reply
             return
 
         if r.status_code != 201:

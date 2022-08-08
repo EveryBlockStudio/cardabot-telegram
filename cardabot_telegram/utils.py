@@ -160,3 +160,16 @@ def get_epoch_remaning_time() -> int:
     res.raise_for_status()
 
     return int(res.json().get("data").get("remaining_time"))
+
+
+def isnumber(s: str) -> bool:
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def min_ada() -> float:
+    """Return the minimum ADA value possible."""
+    return 1e-6
