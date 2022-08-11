@@ -352,7 +352,7 @@ class CardaBotCallbacks:
             ),
         )
 
-    def _get_network() -> str:
+    def _get_network(self) -> str:
         """Return the network name"""
         network = os.environ.get("NETWORK", "mainnet").lower()
         if network not in ("mainnet", "testnet"):
