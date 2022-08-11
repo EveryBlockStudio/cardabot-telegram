@@ -405,8 +405,8 @@ class CardaBotCallbacks:
         pay_url_link = f"{cardabot_url}pay?tx_id={tx_id}"
 
         # create message with a button to send the tx
-        message = context.bot.send_message(
-            chat_id=update.effective_chat.id,
+        message = update.message.reply_text(
+            # chat_id=update.effective_chat.id,
             text="⬇️ Click the button below to sign your transaction using your web wallet:",
             reply_markup=InlineKeyboardMarkup(
                 [
@@ -541,4 +541,19 @@ class CardaBotCallbacks:
                 ]
             ),
         )
+        return
+
+    @_setup_callback
+    def balance(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Get user balance."""
+        chat_id = update.message.from_user.id
+
+        r = requests.get(
+            os.path.join(self.base_url, f"chats/{chat_id}/balance/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        r.raise_for_status()
+
+        update.message.reply_html(html.reply("chat_balance.html", **r.json()))
         return
