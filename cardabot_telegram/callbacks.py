@@ -352,6 +352,14 @@ class CardaBotCallbacks:
             ),
         )
 
+    def _get_network() -> str:
+        """Return the network name"""
+        network = os.environ.get("NETWORK", "mainnet").lower()
+        if network not in ("mainnet", "testnet"):
+            raise ValueError("Invalid network environment variable!")
+
+        return network
+
     @_setup_callback
     def tip(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Tip a user"""
@@ -449,10 +457,6 @@ class CardaBotCallbacks:
             )
             utils.Scheduler.queue.remove_job(job_id)
 
-        network = os.environ.get("NETWORK", "mainnet").lower()
-        if network not in ("mainnet", "testnet"):
-            raise ValueError("Invalid network environment variable!")
-
         start_date = datetime.now() + timedelta(seconds=1)
         end_date = start_date + timedelta(seconds=600)
         job_id = secrets.token_urlsafe(6)  # generate tmp id for the job
@@ -462,7 +466,7 @@ class CardaBotCallbacks:
             seconds=30,
             start_date=start_date,
             end_date=end_date,
-            args=[message, tx_id, network, job_id, end_date],
+            args=[message, tx_id, self._get_network(), job_id, end_date],
             id=job_id,
         )
 
@@ -500,3 +504,41 @@ class CardaBotCallbacks:
         message = html.reply("end_of_epoch_summary.html", epoch=299)
         chat_ids = self._get_all_cardabot_chats()
         utils.send_to_all(bot=bot, chat_ids=chat_ids, text=message, parse_mode="HTML")
+
+    @_setup_callback
+    def claim(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Claim user funds that are being held temporarily."""
+        update.message.reply_text(f"⌛️ We're transfering your funds, please wait...")
+
+        chat_id = update.message.from_user.id
+        r = requests.post(
+            os.path.join(self.base_url, "claim/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+            data={"chat_id_receiver": chat_id},
+        )
+
+        if r.status_code == 406 or r.status_code == 404:
+            message = update.message.reply_text(
+                r.json().get("detail", None)
+            )  # TODO: improve this, should be an html reply
+            return
+        else:
+            r.raise_for_status()
+
+        network = self._get_network()
+        net = network + "." if network == "testnet" else ""
+        update.message.reply_text(
+            text="✅ Your funds were successfuly transfered to you!",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="Check Tx on CardanoScan",
+                            url=f"https://{net}cardanoscan.io/transaction/{r.json().get('tx_id')}",
+                        )
+                    ],
+                ]
+            ),
+        )
+        return

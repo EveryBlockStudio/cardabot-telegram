@@ -48,6 +48,7 @@ if __name__ == "__main__":
     disp.add_handler(CommandHandler("netstats", cbs.netstats, run_async=True))
     disp.add_handler(CommandHandler("connect", cbs.connect, run_async=True))
     disp.add_handler(CommandHandler("alert", cbs.alert, run_async=True))
+    disp.add_handler(CommandHandler("claim", cbs.claim, run_async=True))
 
     # parse command line arguments and start the bot accordingly
     parser = argparse.ArgumentParser()
