@@ -521,8 +521,24 @@ class CardaBotCallbacks:
     def end_of_epoch_task(self, bot) -> None:
         """Send of epoch summary to all users."""
         html = HTMLReplies()
-        message = html.reply("end_of_epoch_summary.html", epoch=299)
-        chat_ids = self._get_all_cardabot_chats()
+        endpoint = "epochsummary/"
+        url = os.path.join(self.base_url, endpoint)
+        r = requests.get(url, headers=self.headers, params={"currency_format": "ADA"})
+        r.raise_for_status()  # captured by the _setup_callback decorator
+        data = r.json().get("data", None)
+
+        template_args = {
+            "epoch": data.get("epoch", None),
+            "blocks": data.get("blocks", None),
+            "txs": data.get("txs", None),
+            "fees": utils.fmt_ada(data.get("fees", None)),
+            "reserves": utils.fmt_ada(data.get("reserves", None)),
+            "treasury": utils.fmt_ada(data.get("treasury", None)),
+        }
+
+        message = html.reply("end_of_epoch_summary.html", **template_args)
+        chat_ids = self._get_all_cardabot_chats() #TODO: exclude users that have disabled the bot messages
+        logging.info("Sending end of epoch summary message to: %s", chat_ids)
         utils.send_to_all(bot=bot, chat_ids=chat_ids, text=message, parse_mode="HTML")
 
     @_setup_callback

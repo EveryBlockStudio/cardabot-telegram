@@ -142,6 +142,7 @@ def send_to_all(bot, chat_ids: list[str], text: str, parse_mode="Markdown"):
     """
     for chat_id in chat_ids:
         try:
+            print("try to send to ", chat_id)
             bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
         except BadRequest as e:
             logging.debug(f"Invalid chat_id: {chat_id} ({repr(e)})")
