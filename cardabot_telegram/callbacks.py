@@ -253,6 +253,19 @@ class CardaBotCallbacks:
 
         return res.json().get("cardabot_user_id", None)
 
+    def _get_cardabot_user_address(self, user_id: int) -> str:
+        """Return the cardabot user address for the given user_id.
+        """
+        res = requests.get(
+            os.path.join(self.base_url, f"users/{user_id}/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        res.raise_for_status()
+
+        return res.json().get("stake_key", None)
+
+
     @_setup_callback
     def connect(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Connect user wallet"""
@@ -290,7 +303,7 @@ class CardaBotCallbacks:
                     [
                         InlineKeyboardButton(
                             text="📖 Learn more",
-                            url="https://instagram.com/EveryBlockStudio",
+                            url="https://cardabot.app/faq/",
                         )
                     ],
                 ]
@@ -300,9 +313,10 @@ class CardaBotCallbacks:
         # task to run for a couple of minutes or until the user connects his wallet
         def update_message(message, cardabot_user, chat_id, job_id):
             cardabot_user_id = self._get_cardabot_user_id(chat_id)
-            if cardabot_user != cardabot_user_id:
+            stake_addr = self._get_cardabot_user_address(cardabot_user_id)
+            if cardabot_user_id != None:
                 message.edit_text(
-                    html.reply("connection_success.html"), parse_mode="HTML"
+                    html.reply("connection_success.html", stake_address=stake_addr), parse_mode="HTML"
                 )
                 utils.Scheduler.queue.remove_job(job_id)
 
@@ -346,6 +360,12 @@ class CardaBotCallbacks:
                         InlineKeyboardButton(
                             text="✨ Telegram ✨",
                             url="https://t.me/EveryBlockStudio",
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="✨ Discord ✨",
+                            url="https://discord.gg/dxNSXpvS9W",
                         )
                     ],
                 ]
@@ -419,7 +439,7 @@ class CardaBotCallbacks:
                     [
                         InlineKeyboardButton(
                             text="📖 Learn more",
-                            url="https://instagram.com/EveryBlockStudio",
+                            url="https://cardabot.app/faq/",
                         )
                     ],
                 ]
