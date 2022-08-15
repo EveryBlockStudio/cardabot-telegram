@@ -23,7 +23,6 @@ if __name__ == "__main__":
 
     # schedule recurring jobs
     start_date = datetime.now() + timedelta(seconds=utils.get_epoch_remaning_time())
-    # scheduler = BackgroundScheduler()
     utils.Scheduler.queue.add_job(
         cbs.end_of_epoch_task,
         "interval",
@@ -32,7 +31,6 @@ if __name__ == "__main__":
         args=[updater.bot],
         id="end_of_epoch_task",
     )
-    # utils.Scheduler.queue.start()  # start scheduler
 
     # telegram bot commands
     disp.add_handler(CommandHandler("start", cbs.start, run_async=True))
@@ -48,6 +46,8 @@ if __name__ == "__main__":
     disp.add_handler(CommandHandler("netstats", cbs.netstats, run_async=True))
     disp.add_handler(CommandHandler("connect", cbs.connect, run_async=True))
     disp.add_handler(CommandHandler("alert", cbs.alert, run_async=True))
+    disp.add_handler(CommandHandler("claim", cbs.claim, run_async=True))
+    disp.add_handler(CommandHandler("balance", cbs.balance, run_async=True))
 
     # parse command line arguments and start the bot accordingly
     parser = argparse.ArgumentParser()

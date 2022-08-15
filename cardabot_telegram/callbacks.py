@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import secrets
 import time
 from datetime import datetime, timedelta
@@ -252,6 +253,19 @@ class CardaBotCallbacks:
 
         return res.json().get("cardabot_user_id", None)
 
+    def _get_cardabot_user_address(self, user_id: int) -> str:
+        """Return the cardabot user address for the given user_id.
+        """
+        res = requests.get(
+            os.path.join(self.base_url, f"users/{user_id}/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        res.raise_for_status()
+
+        return res.json().get("stake_key", None)
+
+
     @_setup_callback
     def connect(self, update, context, html: HTMLReplies = HTMLReplies()):
         """Connect user wallet"""
@@ -289,7 +303,7 @@ class CardaBotCallbacks:
                     [
                         InlineKeyboardButton(
                             text="📖 Learn more",
-                            url="https://instagram.com/EveryBlockStudio",
+                            url="https://cardabot.app/faq/",
                         )
                     ],
                 ]
@@ -299,9 +313,10 @@ class CardaBotCallbacks:
         # task to run for a couple of minutes or until the user connects his wallet
         def update_message(message, cardabot_user, chat_id, job_id):
             cardabot_user_id = self._get_cardabot_user_id(chat_id)
-            if cardabot_user != cardabot_user_id:
+            stake_addr = self._get_cardabot_user_address(cardabot_user_id)
+            if cardabot_user_id != None:
                 message.edit_text(
-                    html.reply("connection_success.html"), parse_mode="HTML"
+                    html.reply("connection_success.html", stake_address=stake_addr), parse_mode="HTML"
                 )
                 utils.Scheduler.queue.remove_job(job_id)
 
@@ -347,9 +362,23 @@ class CardaBotCallbacks:
                             url="https://t.me/EveryBlockStudio",
                         )
                     ],
+                    [
+                        InlineKeyboardButton(
+                            text="✨ Discord ✨",
+                            url="https://discord.gg/dxNSXpvS9W",
+                        )
+                    ],
                 ]
             ),
         )
+
+    def _get_network(self) -> str:
+        """Return the network name"""
+        network = os.environ.get("NETWORK", "mainnet").lower()
+        if network not in ("mainnet", "testnet"):
+            raise ValueError("Invalid network environment variable!")
+
+        return network
 
     @_setup_callback
     def tip(self, update, context, html: HTMLReplies = HTMLReplies()):
@@ -359,12 +388,18 @@ class CardaBotCallbacks:
             update.message.reply_html(html.reply("tip_refused.html"))
             return
 
+        txt = update.message.text.split()
+        lbound = utils.min_ada()
+        if not (len(txt) == 2 and utils.isnumber(txt[1]) and float(txt[1]) > lbound):
+            update.message.reply_html(html.reply("tip_refused.html"))
+            return
+
         # get data for building tx
         data = {
             "chat_id_sender": update.message.from_user.id,
             "chat_id_receiver": update.message.reply_to_message.from_user.id,
             "username_receiver": update.message.reply_to_message.from_user.username,
-            "amount": update.message.text.split(" ")[-1],
+            "amount": float(txt[1]),
             "client": "TELEGRAM",
         }
 
@@ -375,7 +410,9 @@ class CardaBotCallbacks:
 
         # verify the tx response
         if r.status_code >= 400:
-            message = update.message.reply_text(r.json().get("detail", None))
+            message = update.message.reply_text(
+                r.json().get("detail", None)
+            )  # TODO: improve this, should be an html reply
             return
 
         if r.status_code != 201:
@@ -388,8 +425,8 @@ class CardaBotCallbacks:
         pay_url_link = f"{cardabot_url}pay?tx_id={tx_id}"
 
         # create message with a button to send the tx
-        message = context.bot.send_message(
-            chat_id=update.effective_chat.id,
+        message = update.message.reply_text(
+            # chat_id=update.effective_chat.id,
             text="⬇️ Click the button below to sign your transaction using your web wallet:",
             reply_markup=InlineKeyboardMarkup(
                 [
@@ -402,7 +439,7 @@ class CardaBotCallbacks:
                     [
                         InlineKeyboardButton(
                             text="📖 Learn more",
-                            url="https://instagram.com/EveryBlockStudio",
+                            url="https://cardabot.app/faq/",
                         )
                     ],
                 ]
@@ -440,10 +477,6 @@ class CardaBotCallbacks:
             )
             utils.Scheduler.queue.remove_job(job_id)
 
-        network = os.environ.get("NETWORK", "mainnet").lower()
-        if network not in ("mainnet", "testnet"):
-            raise ValueError("Invalid network environment variable!")
-
         start_date = datetime.now() + timedelta(seconds=1)
         end_date = start_date + timedelta(seconds=600)
         job_id = secrets.token_urlsafe(6)  # generate tmp id for the job
@@ -453,7 +486,7 @@ class CardaBotCallbacks:
             seconds=30,
             start_date=start_date,
             end_date=end_date,
-            args=[message, tx_id, network, job_id, end_date],
+            args=[message, tx_id, self._get_network(), job_id, end_date],
             id=job_id,
         )
 
@@ -488,6 +521,75 @@ class CardaBotCallbacks:
     def end_of_epoch_task(self, bot) -> None:
         """Send of epoch summary to all users."""
         html = HTMLReplies()
-        message = html.reply("end_of_epoch_summary.html", epoch=299)
-        chat_ids = self._get_all_cardabot_chats()
+        endpoint = "epochsummary/"
+        url = os.path.join(self.base_url, endpoint)
+        r = requests.get(url, headers=self.headers, params={"currency_format": "ADA"})
+        r.raise_for_status()  # captured by the _setup_callback decorator
+        data = r.json().get("data", None)
+
+        template_args = {
+            "epoch": data.get("epoch", None),
+            "blocks": data.get("blocks", None),
+            "txs": data.get("txs", None),
+            "fees": utils.fmt_ada(data.get("fees", None)),
+            "reserves": utils.fmt_ada(data.get("reserves", None)),
+            "treasury": utils.fmt_ada(data.get("treasury", None)),
+        }
+
+        message = html.reply("end_of_epoch_summary.html", **template_args)
+        chat_ids = self._get_all_cardabot_chats() #TODO: exclude users that have disabled the bot messages
+        logging.info("Sending end of epoch summary message to: %s", chat_ids)
         utils.send_to_all(bot=bot, chat_ids=chat_ids, text=message, parse_mode="HTML")
+
+    @_setup_callback
+    def claim(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Claim user funds that are being held temporarily."""
+        update.message.reply_text(f"⌛️ We're transfering your funds, please wait...")
+
+        chat_id = update.message.from_user.id
+        r = requests.post(
+            os.path.join(self.base_url, "claim/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+            data={"chat_id_receiver": chat_id},
+        )
+
+        if r.status_code == 406 or r.status_code == 404:
+            message = update.message.reply_text(
+                r.json().get("detail", None)
+            )  # TODO: improve this, should be an html reply
+            return
+        else:
+            r.raise_for_status()
+
+        network = self._get_network()
+        net = network + "." if network == "testnet" else ""
+        update.message.reply_text(
+            text="✅ Your funds were successfuly transfered to you!",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="Check Tx on CardanoScan",
+                            url=f"https://{net}cardanoscan.io/transaction/{r.json().get('tx_id')}",
+                        )
+                    ],
+                ]
+            ),
+        )
+        return
+
+    @_setup_callback
+    def balance(self, update, context, html: HTMLReplies = HTMLReplies()):
+        """Get user balance."""
+        chat_id = update.message.from_user.id
+
+        r = requests.get(
+            os.path.join(self.base_url, f"chats/{chat_id}/balance/"),
+            headers=self.headers,
+            params={"client_filter": "TELEGRAM"},
+        )
+        r.raise_for_status()
+
+        update.message.reply_html(html.reply("chat_balance.html", **r.json()))
+        return

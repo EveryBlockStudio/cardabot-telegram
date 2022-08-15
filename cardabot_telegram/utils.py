@@ -142,6 +142,7 @@ def send_to_all(bot, chat_ids: list[str], text: str, parse_mode="Markdown"):
     """
     for chat_id in chat_ids:
         try:
+            print("try to send to ", chat_id)
             bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
         except BadRequest as e:
             logging.debug(f"Invalid chat_id: {chat_id} ({repr(e)})")
@@ -160,3 +161,16 @@ def get_epoch_remaning_time() -> int:
     res.raise_for_status()
 
     return int(res.json().get("data").get("remaining_time"))
+
+
+def isnumber(s: str) -> bool:
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def min_ada() -> float:
+    """Return the minimum ADA value possible."""
+    return 1e-6
