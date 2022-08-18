@@ -394,6 +394,10 @@ class CardaBotCallbacks:
             update.message.reply_html(html.reply("tip_refused.html"))
             return
 
+        # make sure to create chat_ids for recipient and sender
+        self.cardabotdb.get_or_create_chat(int(update.message.from_user.id))
+        self.cardabotdb.get_or_create_chat(int(update.message.reply_to_message.from_user.id))
+
         # get data for building tx
         data = {
             "chat_id_sender": update.message.from_user.id,
